@@ -1,6 +1,9 @@
 # License Server
 
-## Overview
+## Idea
+**Problem**: Large companies tend to have strict policies that restrict certain machines to have direct internet access. This is a problem if we want license files on them to be up-to-date.
+
+**Solution**: We allow one computer, the *license server*, to have internet access. All the machines in the network will contact the license server and it will in turn contact Cryptolens.
 
 ![](example.png)
 
