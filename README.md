@@ -1,5 +1,9 @@
 # License Server
 
+## Overview
+
+![](example.png)
+
 ## Starting the server
 
 In order to launch the server, you need to run `LicenseServer.exe` as an administrator. The default port is 80 but this can be changed.
