@@ -90,7 +90,7 @@ namespace LicenseServer
                     else
                     {
                         byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server -- port {port}</title></head>" +
-                        $"<body>Welcome to the <strong>Cryptolens License Server</strong> -- port {port}!. If you see this message, it means " +
+                        $"<body>Welcome to the <strong>Cryptolens License Server</strong> -- port {port}! If you see this message, it means " +
                         "everything is working properly.</em></body></html>");
                         context.Response.OutputStream.Write(responseArray, 0, responseArray.Length); 
                         context.Response.KeepAlive = false; 

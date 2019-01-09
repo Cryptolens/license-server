@@ -9,13 +9,13 @@
 
 ## Starting the server
 
-In order to launch the server, you need to run `LicenseServer.exe` as an administrator. The default port is 80 but this can be changed.
+In order to launch the server, you need to run `LicenseServer.exe` as an administrator. The default port is 8080 but this can be changed.
 One way of doing it is to run CMD as an administrator and then type the command below:
 
 ```
 C:\> LicenseServer.exe 5000
 ```
-> Please make sure to check that this port is open (described below).
+> Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
 ## Allowing ports
 
