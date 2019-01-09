@@ -32,17 +32,15 @@ namespace LicenseServer
             {
                 httpListener.Prefixes.Add($"http://+:{port}/"); 
                 httpListener.Start();
-                Console.WriteLine("Starting server...");
+                WriteMessage("Starting server...");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: Please run the license server as an administrator.");
-                Console.WriteLine("\nDetailed error shown below:");
-                Console.WriteLine(ex.StackTrace);
+                WriteMessage("Error: Please run the license server as an administrator.\n\nDetailed error shown below: " + ex.StackTrace.ToString());
                 Console.ReadLine();
                 return;
             }
-            Console.WriteLine("Server started.");
+            WriteMessage("Server started.");
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
         }
