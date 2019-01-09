@@ -56,11 +56,11 @@ namespace LicenseServer
                 {
                     if (context.Request.Url.OriginalString.Contains("/api/"))
                     {
-                        Console.WriteLine(context.Request.Url);
+                        WriteMessage(context.Request.Url.ToString());
 
                         // adapted from https://stackoverflow.com/a/700307/1275924
                         var original = context.Request;
-                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://app.cryptolens.io/");
+                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://app.cryptolens.io/" + new Uri(context.Request.Url.OriginalString).PathAndQuery);
 
                         newRequest.ContentType = original.ContentType;
                         newRequest.Method = original.HttpMethod;
@@ -96,21 +96,25 @@ namespace LicenseServer
                         "everything is working properly.</em></body></html>");
                         context.Response.OutputStream.Write(responseArray, 0, responseArray.Length); 
                         context.Response.KeepAlive = false; 
-                        context.Response.Close(); 
-                        Console.WriteLine("Respone given to a request.");
+                        context.Response.Close();
+                        WriteMessage("Webdashboard served successfully.");
                     }
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.InnerException);
-                    Console.WriteLine(ex.StackTrace);
+                    WriteMessage(ex.Message + "\n" + ex.InnerException.ToString() + "\n" + ex.StackTrace);
                 }
                 finally
                 {
                     context.Response.Close();
                 }
             }
+        }
+
+        private static void WriteMessage(string message)
+        {
+            var time = DateTime.UtcNow;
+            Console.WriteLine($"[{time.ToShortDateString()} {time.ToShortTimeString()}] {message}");
         }
 
         private static byte[] ReadToByteArray(Stream inputStream, int v = 1024)
