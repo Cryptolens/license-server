@@ -15,7 +15,7 @@ namespace LicenseServer
     {
         static HttpListener httpListener = new HttpListener();
 
-        public static int port = 80;
+        public static int port = 8080;
 
         static void Main(string[] args)
         {
@@ -95,7 +95,7 @@ namespace LicenseServer
                         context.Response.OutputStream.Write(responseArray, 0, responseArray.Length); 
                         context.Response.KeepAlive = false; 
                         context.Response.Close();
-                        WriteMessage("Webdashboard served successfully.");
+                        WriteMessage("Web dashboard served successfully.");
                     }
                 }
                 catch(Exception ex)
