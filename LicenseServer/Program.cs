@@ -25,6 +25,26 @@ namespace LicenseServer
             {
                 port = Convert.ToInt32(args[0]);
             }
+            else
+            {
+                Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
+
+                try
+                {
+                    var portString = Console.ReadLine();
+
+                    if(!string.IsNullOrWhiteSpace(portString))
+                    {
+                        port = Convert.ToInt32(portString);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteMessage("The port was incorrent.");
+                    Console.ReadLine();
+                    return;
+                }
+            }
 
             // inspired by https://www.codeproject.com/Tips/485182/%2FTips%2F485182%2FCreate-a-local-server-in-Csharp.
 

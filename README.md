@@ -15,6 +15,9 @@ One way of doing it is to run CMD as an administrator and then type the command 
 ```
 C:\> LicenseServer.exe 5000
 ```
+
+You can also specify inside the application.
+
 > Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
 ## Allowing ports
