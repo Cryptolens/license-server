@@ -9,7 +9,7 @@
 
 ## Starting the server
 
-In order to launch the server, you need to run `LicenseServer.exe` as an administrator. The default port is 8080 but this can be changed.
+In order to launch the server, you need to run `LicenseServer.exe` as an administrator (you can download it [here](https://github.com/Cryptolens/license-server/releases)). The default port is 8080 but this can be changed.
 One way of doing it is to run CMD as an administrator and then type the command below:
 
 ```
