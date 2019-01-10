@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using System.Web;
+using System.Net.Sockets;
 
 namespace LicenseServer
 {
@@ -61,6 +62,16 @@ namespace LicenseServer
                 return;
             }
             WriteMessage("Server started.");
+
+            try
+            {
+                WriteMessage($"Server address is: {GetLocalIPAddress()}:{port}");
+            }
+            catch(Exception ex)
+            {
+                WriteMessage("Could not get the IP of the license server.");
+            }
+
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
         }
@@ -148,6 +159,19 @@ namespace LicenseServer
                 }
                 return ms.ToArray();
             }
+        }
+
+        private static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
     }
 }
