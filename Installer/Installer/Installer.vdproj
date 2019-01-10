@@ -15,12 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_1B491DF57F864516A700FEAE28187ABF"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_34F584E0870D4AD195CB3D7F403D73F0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -39,8 +33,14 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B5433C3ECE0046C598A49D74DDDA2245"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_1B491DF57F864516A700FEAE28187ABF"
+        "OwnerKey" = "8:_B5433C3ECE0046C598A49D74DDDA2245"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -138,37 +138,6 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_1B491DF57F864516A700FEAE28187ABF"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:LicenseServer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_1B491DF57F864516A700FEAE28187ABF"
-                    {
-                    "Name" = "8:LicenseServer.exe"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:..\\..\\LicenseServer\\bin\\Release\\LicenseServer.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_10B3ACCBFC8948E995A6981E09C27C02"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_34F584E0870D4AD195CB3D7F403D73F0"
             {
             "SourcePath" = "8:..\\..\\example.png"
@@ -213,6 +182,37 @@
             {
             "SourcePath" = "8:License.rtf"
             "TargetName" = "8:License.rtf"
+            "Tag" = "8:"
+            "Folder" = "8:_10B3ACCBFC8948E995A6981E09C27C02"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B5433C3ECE0046C598A49D74DDDA2245"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:LicenseServer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_B5433C3ECE0046C598A49D74DDDA2245"
+                    {
+                    "Name" = "8:LicenseServer.exe"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\..\\LicenseServer\\bin\\Release\\LicenseServer.exe"
+            "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_10B3ACCBFC8948E995A6981E09C27C02"
             "Condition" = "8:"
@@ -406,7 +406,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5CE7B05DA0E94DCCA3BEAC2E5BF09C81"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_627283FF9AE94AC8B265A3763B26B069"
             {
             "Name" = "8:Shortcut to LicenseServer.exe"
             "Arguments" = "8:"
@@ -414,7 +414,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_1B491DF57F864516A700FEAE28187ABF"
+            "Target" = "8:_B5433C3ECE0046C598A49D74DDDA2245"
             "Folder" = "8:_7B005F569DD6451D819DBAEF61DA065A"
             "WorkingFolder" = "8:_10B3ACCBFC8948E995A6981E09C27C02"
             "Icon" = "8:"
