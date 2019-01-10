@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0E0A95224E844A6587075F6FC5E1531F"
+        "MsmKey" = "8:_1B491DF57F864516A700FEAE28187ABF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -40,7 +40,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0E0A95224E844A6587075F6FC5E1531F"
+        "OwnerKey" = "8:_1B491DF57F864516A700FEAE28187ABF"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -138,14 +138,14 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_0E0A95224E844A6587075F6FC5E1531F"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_1B491DF57F864516A700FEAE28187ABF"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:LicenseServer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_0E0A95224E844A6587075F6FC5E1531F"
+                    "_1B491DF57F864516A700FEAE28187ABF"
                     {
                     "Name" = "8:LicenseServer.exe"
                     "Attributes" = "3:512"
@@ -286,7 +286,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Cryptolens License Server"
         "ProductCode" = "8:{A3DA310D-AE93-4DD9-9990-9CF6EFE5E5FA}"
-        "PackageCode" = "8:{A247433E-3FE5-4AB0-8991-3C2EA4AF4183}"
+        "PackageCode" = "8:{DCE1C635-26FF-4BC9-AA79-B8421ED1E5DC}"
         "UpgradeCode" = "8:{BB4B1257-B7BD-4092-B7D0-23DD393E198A}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -406,15 +406,15 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_BA50691CEE684C3F9130A82C0D0AC3B2"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5CE7B05DA0E94DCCA3BEAC2E5BF09C81"
             {
-            "Name" = "8:LicenseServer"
+            "Name" = "8:Shortcut to LicenseServer.exe"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_0E0A95224E844A6587075F6FC5E1531F"
+            "Target" = "8:_1B491DF57F864516A700FEAE28187ABF"
             "Folder" = "8:_7B005F569DD6451D819DBAEF61DA065A"
             "WorkingFolder" = "8:_10B3ACCBFC8948E995A6981E09C27C02"
             "Icon" = "8:"

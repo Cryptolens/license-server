@@ -40,7 +40,7 @@ namespace LicenseServer
                 }
                 catch (Exception ex)
                 {
-                    WriteMessage("The port was incorrent.");
+                    WriteMessage("The port was incorrect.");
                     Console.ReadLine();
                     return;
                 }
