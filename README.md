@@ -30,3 +30,7 @@ If you use the default firewall, it can be opened as follows:
 3. Ryle type should be **Port**
 4. **Specific local ports** should be checked, and the textbox at the right of it should be set to 5000 (or any other port of your choosing).
 5. Click next through the entire wizzard and that should be it.
+
+## Connect to the server
+
+Depending on which of our client SDKs you use, there will be a different way to provide the URL of the license server. For example, if you use the [.NET SDK](https://github.com/Cryptolens/cryptolens-dotnet), every API method (such as Key.Activate) will have an extra parameter `LicenseServerUrl`, which can be used to provide the URL of the license server.
