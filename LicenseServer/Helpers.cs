@@ -32,8 +32,6 @@ namespace LicenseServer
 
             var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = signMethod };
             
-            // TODO: make sure to check if useCache is enabled.
-
             if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
