@@ -137,7 +137,11 @@ namespace LicenseServer
                             if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
                             {
                                 var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context);
-                                WriteMessage(activateResponse);
+
+                                if (activateResponse != null)
+                                {
+                                    WriteMessage(activateResponse);
+                                }
                             }
                             else
                             {
