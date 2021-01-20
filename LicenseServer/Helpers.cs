@@ -30,11 +30,11 @@ namespace LicenseServer
 
             LAResult result = null;
 
-            var key = new LAKey { Key = licenseKey, MachineCode = machineCode, ProductId = productId, SignMethod = signMethod };
+            var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = signMethod };
             
             // TODO: make sure to check if useCache is enabled.
 
-            if (licenseCache.TryGetValue(key, out result) && cacheLength > 0)
+            if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
                 if (ts.Days >= cacheLength)
@@ -48,20 +48,22 @@ namespace LicenseServer
                         var resultObject = JsonConvert.DeserializeObject<RawResponse>(result.Response);
                         var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(resultObject.LicenseKey).ToLicenseKey();
                         result.SignDate = license2.SignDate;
+                        result.LicenseKey = license2;
                     }
                     else
                     {
                         var resultObject = JsonConvert.DeserializeObject<KeyInfoResult>(result.Response);
                         result.SignDate = resultObject.LicenseKey.SignDate;
+                        result.LicenseKey = resultObject.LicenseKey;
                     }
 
-                    return $"Cache updated for license '{key}' and machine code '{machineCode}'.";
+                    return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
 
                 }
                 else
                 {
                     ReturnResponse(result.Response, context);
-                    return $"Retrieved cached version of the license '{key}' and machine code '{machineCode}'.";
+                    return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
             }
             else
@@ -77,15 +79,17 @@ namespace LicenseServer
                         var resultObject = JsonConvert.DeserializeObject<RawResponse>(result.Response);
                         var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(resultObject.LicenseKey).ToLicenseKey();
                         result.SignDate = license2.SignDate;
+                        result.LicenseKey = license2;
                     }
                     else
                     {
                         var resultObject = JsonConvert.DeserializeObject<KeyInfoResult>(result.Response);
                         result.SignDate = resultObject.LicenseKey.SignDate;
+                        result.LicenseKey = resultObject.LicenseKey;
                     }
 
                     licenseCache.Add(key, result);
-                    return $"Added to the cache the license '{key}' and machine code '{machineCode}'.";
+                    return $"Added to the cache the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
                 return null;
             }
