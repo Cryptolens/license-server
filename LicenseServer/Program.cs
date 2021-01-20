@@ -18,11 +18,21 @@ namespace LicenseServer
 
         public static int port = 8080;
 
+        public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
+
+        public static int cacheLength = 0;
+
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v1.0\n");
+            Console.WriteLine("Cryptolens License Server v1.2\n");
 
-            if (args.Length == 1)
+            if (args.Length == 2)
+            {
+                port = Convert.ToInt32(args[0]);
+                cacheLength = Convert.ToInt32(args[1]);
+            }
+            else if (args.Length == 1)
             {
                 port = Convert.ToInt32(args[0]);
             }
@@ -34,7 +44,7 @@ namespace LicenseServer
                 {
                     var portString = Console.ReadLine();
 
-                    if(!string.IsNullOrWhiteSpace(portString))
+                    if (!string.IsNullOrWhiteSpace(portString))
                     {
                         port = Convert.ToInt32(portString);
                     }
@@ -42,6 +52,24 @@ namespace LicenseServer
                 catch (Exception ex)
                 {
                     WriteMessage("The port was incorrect.");
+                    Console.ReadLine();
+                    return;
+                }
+
+                Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
+
+                try
+                {
+                    var cacheLengthString = Console.ReadLine();
+
+                    if (!string.IsNullOrWhiteSpace(cacheLengthString))
+                    {
+                        cacheLength = Convert.ToInt32(cacheLengthString);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteMessage("The cache value could not be parsed. The default value will be used.");
                     Console.ReadLine();
                     return;
                 }
@@ -89,14 +117,14 @@ namespace LicenseServer
 
                         // adapted from https://stackoverflow.com/a/700307/1275924
                         var original = context.Request;
-                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://app.cryptolens.io/" + new Uri(context.Request.Url.OriginalString).PathAndQuery);
+                        var pathAndQuery = new Uri(context.Request.Url.OriginalString).PathAndQuery;
+                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://app.cryptolens.io/" + pathAndQuery);
 
                         newRequest.ContentType = original.ContentType;
                         newRequest.Method = original.HttpMethod;
                         newRequest.UserAgent = original.UserAgent;
 
-                        byte[] originalStream = ReadToByteArray(original.InputStream, 1024);
-
+                        byte[] originalStream = Helpers.ReadToByteArray(original.InputStream, 1024);
 
                         if (original.HttpMethod == "GET")
                         {
@@ -106,23 +134,38 @@ namespace LicenseServer
                         {
                             // for POST
 
-                            Stream reqStream = newRequest.GetRequestStream();
+                            if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
+                            {
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context);
 
-                            reqStream.Write(originalStream, 0, originalStream.Length);
-                            reqStream.Close();
+                                if (activateResponse != null)
+                                {
+                                    WriteMessage(activateResponse);
+                                }
+                            }
+                            else
+                            {
+                                Stream reqStream = newRequest.GetRequestStream();
 
-                            var output = ReadToByteArray(newRequest.GetResponse().GetResponseStream());
+                                reqStream.Write(originalStream, 0, originalStream.Length);
+                                reqStream.Close();
 
-                            context.Response.OutputStream.Write(output, 0, output.Length);
-                            context.Response.KeepAlive = false; 
-                            context.Response.Close(); 
+                                var output = Helpers.ReadToByteArray(newRequest.GetResponse().GetResponseStream());
+
+                                context.Response.OutputStream.Write(output, 0, output.Length);
+                                context.Response.KeepAlive = false;
+                                context.Response.Close();
+                            }
+
                         }
                     }
                     else
                     {
                         byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server -- port {port}</title></head>" +
-                        $"<body>Welcome to the <strong>Cryptolens License Server</strong> -- port {port}! If you see this message, it means " +
-                        "everything is working properly.</em></body></html>");
+                        $"<body><p>Welcome to the <strong>Cryptolens License Server 1.2</strong> -- port {port}! If you see this message, it means " +
+                        "everything is working properly.</em></p><p>" +
+                        "If you can find its documentation <a href='https://github.com/cryptolens/license-server'>here</a>." +
+                        "</p></body></html>");
                         context.Response.OutputStream.Write(responseArray, 0, responseArray.Length); 
                         context.Response.KeepAlive = false; 
                         context.Response.Close();
@@ -146,20 +189,6 @@ namespace LicenseServer
             Console.WriteLine($"[{time.ToShortDateString()} {time.ToShortTimeString()}] {message}");
         }
 
-        private static byte[] ReadToByteArray(Stream inputStream, int v = 1024)
-        {
-            // from: https://stackoverflow.com/a/221941/1275924
-            byte[] buffer = new byte[16 * v];
-            using (MemoryStream ms = new MemoryStream())
-            {
-                int read;
-                while ((read = inputStream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
-                return ms.ToArray();
-            }
-        }
 
         private static string GetLocalIPAddress()
         {
