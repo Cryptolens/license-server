@@ -9,6 +9,7 @@ using System.Threading;
 using System.IO;
 using System.Web;
 using System.Net.Sockets;
+using System.Collections.Specialized;
 
 namespace LicenseServer
 {
@@ -17,12 +18,18 @@ namespace LicenseServer
         static HttpListener httpListener = new HttpListener();
 
         public static int port = 8080;
+        public static bool logging = false;
 
         static void Main(string[] args)
         {
             Console.WriteLine("Cryptolens License Server v1.0\n");
 
-            if (args.Length == 1)
+            if(args.Length == 2)
+            {
+                port = Convert.ToInt32(args[0]);
+                logging = Convert.ToBoolean(args[1]);
+            }
+            else if (args.Length == 1)
             {
                 port = Convert.ToInt32(args[0]);
             }
@@ -44,6 +51,19 @@ namespace LicenseServer
                     WriteMessage("The port was incorrect.");
                     Console.ReadLine();
                     return;
+                }
+
+                Console.WriteLine("\nWould you like to enable local logging [y/N]? This will create a local sqlite database in the same folder as the executable.");
+
+                if(Console.ReadLine() == "y")
+                {
+                    logging = true;
+                    WriteMessage("Logging enabled.");
+                    Helpers.InitDB();
+                }
+                else
+                {
+                    WriteMessage("Logging disabled.");
                 }
             }
 
@@ -97,7 +117,6 @@ namespace LicenseServer
 
                         byte[] originalStream = ReadToByteArray(original.InputStream, 1024);
 
-
                         if (original.HttpMethod == "GET")
                         {
                             throw new ArgumentException("GET requests are not supported.");
@@ -115,7 +134,21 @@ namespace LicenseServer
 
                             context.Response.OutputStream.Write(output, 0, output.Length);
                             context.Response.KeepAlive = false; 
-                            context.Response.Close(); 
+                            context.Response.Close();
+
+                            if (logging)
+                            {
+                                NameValueCollection coll = HttpUtility.ParseQueryString(System.Text.UTF8Encoding.UTF8.GetString(originalStream));
+
+                                try
+                                {
+                                    Helpers.UpdateUser(Convert.ToInt32(coll["ProductId"]), coll["Key"], coll["MachineCode"], "no user");
+                                }
+                                catch(Exception ex)
+                                {
+
+                                }
+                            }
                         }
                     }
                     else
