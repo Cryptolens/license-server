@@ -141,8 +141,15 @@ namespace LicenseServer
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
 
-            Timer tm = new Timer(x => Helpers.UpdateLocalCache(keysToUpdate));
+            var tm = new System.Timers.Timer(3000);
+            tm.Elapsed += Tm_Elapsed;
+            tm.AutoReset = true;
+            tm.Enabled = true;
+        }
 
+        private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Helpers.UpdateLocalCache(keysToUpdate);
         }
 
         static void ResponseThread()

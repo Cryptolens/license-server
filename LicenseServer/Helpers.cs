@@ -57,8 +57,7 @@ namespace LicenseServer
                         result.LicenseKey = resultObject.LicenseKey;
                     }
 
-                    keysToUpdate.AddOrUpdate(key, x=> result.Response, y=> result.Response);
-
+                    keysToUpdate.AddOrUpdate(key, x=> result.Response, (x,y) => result.Response);
 
                     return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
 
@@ -92,6 +91,8 @@ namespace LicenseServer
                     }
 
                     licenseCache.Add(key, result);
+                    keysToUpdate.AddOrUpdate(key, x => result.Response, (x, y) => result.Response);
+
                     return $"Added to the cache the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
                 return null;
@@ -193,7 +194,21 @@ namespace LicenseServer
 
         public static void UpdateLocalCache(ConcurrentDictionary<LAKey, string> keysToUpdate)
         {
-            
+            var keysToSave = keysToUpdate.Keys.ToList();
+
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache")))
+            {
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
+            }
+
+            foreach (var key in keysToSave)
+            {
+                string res = null;
+                if (keysToUpdate.TryRemove(key, out res))
+                {
+                    System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache", $"{key.ProductId}.{key.Key}.{key.SignMethod}.skm"), res);
+                }
+            }
         }
     }
 
