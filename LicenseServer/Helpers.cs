@@ -12,11 +12,13 @@ using Newtonsoft.Json;
 using SKM.V3;
 using SKM.V3.Models;
 
+using System.Collections.Concurrent;
+
 namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -54,6 +56,9 @@ namespace LicenseServer
                         result.SignDate = resultObject.LicenseKey.SignDate;
                         result.LicenseKey = resultObject.LicenseKey;
                     }
+
+                    keysToUpdate.AddOrUpdate(key, x=> result.Response, y=> result.Response);
+
 
                     return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
 
@@ -186,7 +191,10 @@ namespace LicenseServer
             }
         }
 
-
+        public static void UpdateLocalCache(ConcurrentDictionary<LAKey, string> keysToUpdate)
+        {
+            
+        }
     }
 
     public enum APIMethod

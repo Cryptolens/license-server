@@ -10,6 +10,8 @@ using System.IO;
 using System.Web;
 using System.Net.Sockets;
 
+using System.Collections.Concurrent;
+
 namespace LicenseServer
 {
     class Program
@@ -20,6 +22,8 @@ namespace LicenseServer
 
         public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
 
+        public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
+
         public static int cacheLength = 0;
 
 
@@ -27,7 +31,7 @@ namespace LicenseServer
         {
             Console.WriteLine("Cryptolens License Server v1.2\n");
 
-            if(args.Length == 3)
+            if (args.Length == 3)
             {
                 port = Convert.ToInt32(args[0]);
                 cacheLength = Convert.ToInt32(args[1]);
@@ -92,7 +96,7 @@ namespace LicenseServer
 
                 var licenseFilePaths = Console.ReadLine();
 
-                if(string.IsNullOrWhiteSpace(licenseFilePaths))
+                if (string.IsNullOrWhiteSpace(licenseFilePaths))
                 {
                     WriteMessage("No license files were provided.");
                 }
@@ -113,7 +117,7 @@ namespace LicenseServer
 
             try
             {
-                httpListener.Prefixes.Add($"http://+:{port}/"); 
+                httpListener.Prefixes.Add($"http://+:{port}/");
                 httpListener.Start();
                 WriteMessage("Starting server...");
             }
@@ -129,13 +133,16 @@ namespace LicenseServer
             {
                 WriteMessage($"Server address is: {GetLocalIPAddress()}:{port}");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 WriteMessage("Could not get the IP of the license server.");
             }
 
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
+
+            Timer tm = new Timer(x => Helpers.UpdateLocalCache(keysToUpdate));
+
         }
 
         static void ResponseThread()
@@ -170,7 +177,7 @@ namespace LicenseServer
 
                             if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
                             {
-                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context);
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate);
 
                                 if (activateResponse != null)
                                 {
