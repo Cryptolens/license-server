@@ -73,6 +73,27 @@ namespace LicenseServer
                     Console.ReadLine();
                     return;
                 }
+
+                Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
+                    "applications on your network can access it.  :");
+
+                var licenseFilePaths = Console.ReadLine();
+
+                if(string.IsNullOrWhiteSpace(licenseFilePaths))
+                {
+                    WriteMessage("No license files were provided.");
+                }
+                else
+                {
+                    var paths = licenseFilePaths.Split(';');
+
+                    foreach (var path in paths)
+                    {
+                        string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "OK" : "Error";
+                        WriteMessage($"File '{path}' {result}.");
+                    }
+                }
+
             }
 
             // inspired by https://www.codeproject.com/Tips/485182/%2FTips%2F485182%2FCreate-a-local-server-in-Csharp.

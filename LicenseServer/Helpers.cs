@@ -93,6 +93,50 @@ namespace LicenseServer
             }
         }
 
+
+        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, string pathToFile)
+        {
+            try
+            {
+                var file = System.IO.File.ReadAllText(pathToFile);
+
+                var response = Newtonsoft.Json.JsonConvert.DeserializeObject<RawResponse>(file);
+
+                if (!string.IsNullOrEmpty(response.LicenseKey))
+                {
+                    // SignMethod = 1
+
+                    var licenseBytes = Convert.FromBase64String(response.LicenseKey);
+                    var licenseKey = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(licenseBytes)).ToLicenseKey();
+                    licenseKey.RawResponse = response;
+
+                    licenseCache.Add(new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 1 },
+                      new LAResult
+                      {
+                          LicenseKey = licenseKey,
+                          SignDate = licenseKey.SignDate,
+                          Response = file
+                      });
+                }
+                else
+                {
+                    // SignMethod = 0
+
+                    var licenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(file);
+
+                    licenseCache.Add(new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 0 },
+                        new LAResult { LicenseKey = licenseKey, SignDate = licenseKey.SignDate,  Response = 
+                        JsonConvert.SerializeObject(new KeyInfoResult { Result = ResultType.Success, LicenseKey = licenseKey  })});
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static string ObtainNewLicense(byte[] originalStream, HttpWebRequest newRequest, HttpListenerContext context)
         {
             Stream reqStream = newRequest.GetRequestStream();
