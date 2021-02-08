@@ -102,7 +102,7 @@ namespace LicenseServer
 
                     foreach (var path in paths)
                     {
-                        string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "OK" : "Error";
+                        string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "added successfully" : "could not be added";
                         WriteMessage($"File '{path}' {result}.");
                     }
                 }
