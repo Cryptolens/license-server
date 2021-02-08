@@ -27,7 +27,20 @@ namespace LicenseServer
         {
             Console.WriteLine("Cryptolens License Server v1.2\n");
 
-            if (args.Length == 2)
+            if(args.Length == 3)
+            {
+                port = Convert.ToInt32(args[0]);
+                cacheLength = Convert.ToInt32(args[1]);
+
+                var paths = args[3].Split(';');
+
+                foreach (var path in paths)
+                {
+                    string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "OK" : "Error";
+                    WriteMessage($"File '{path}' {result}.");
+                }
+            }
+            else if (args.Length == 2)
             {
                 port = Convert.ToInt32(args[0]);
                 cacheLength = Convert.ToInt32(args[1]);
@@ -75,7 +88,7 @@ namespace LicenseServer
                 }
 
                 Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
-                    "applications on your network can access it.  :");
+                    "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' :");
 
                 var licenseFilePaths = Console.ReadLine();
 
