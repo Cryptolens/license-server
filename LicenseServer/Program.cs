@@ -33,103 +33,128 @@ namespace LicenseServer
         {
             Console.WriteLine("Cryptolens License Server v2.0\n");
 
-            if(args.Length == 4)
+            try
             {
-                port = Convert.ToInt32(args[0]);
-                cacheLength = Convert.ToInt32(args[1]);
-                attemptToRefresh = args[2] == "y" ? false : true;
+                var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));
 
-                var paths = args[3].Split(';');
+                WriteMessage("Loading settings from config.json.");
 
-                foreach (var path in paths)
+                if (config != null)
                 {
-                    string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
-                    WriteMessage($"File '{path}' {result}.");
-                }
-            }
-            if (args.Length == 3)
-            {
-                port = Convert.ToInt32(args[0]);
-                cacheLength = Convert.ToInt32(args[1]);
-                attemptToRefresh = args[2] == "y" ? false : true;
-            }
-            else if (args.Length == 2)
-            {
-                port = Convert.ToInt32(args[0]);
-                cacheLength = Convert.ToInt32(args[1]);
-            }
-            else if (args.Length == 1)
-            {
-                port = Convert.ToInt32(args[0]);
-            }
-            else
-            {
-                Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
+                    cacheLength = config.CacheLength;
+                    WriteMessage($"Cache length set to {cacheLength}");
+                    port = config.Port;
+                    WriteMessage($"Port set to {port}");
+                    attemptToRefresh = !config.OfflineMode;
+                    WriteMessage($"Offline mode is set to {!attemptToRefresh}");
 
-                try
-                {
-                    var portString = Console.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(portString))
+                    foreach (var file in config.ActivationFiles)
                     {
-                        port = Convert.ToInt32(portString);
+                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
+                        WriteMessage($"File '{file}' {result}.");
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex3)
+            {
+                if (args.Length == 4)
                 {
-                    WriteMessage("The port was incorrect.");
-                    Console.ReadLine();
-                    return;
-                }
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                    attemptToRefresh = args[2] == "y" ? false : true;
 
-                Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
-
-                try
-                {
-                    var cacheLengthString = Console.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(cacheLengthString))
-                    {
-                        cacheLength = Convert.ToInt32(cacheLengthString);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    WriteMessage("The cache value could not be parsed. The default value will be used.");
-                    Console.ReadLine();
-                    return;
-                }
-
-                if (cacheLength > 0)
-                {
-                    Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
-
-                    if (Console.ReadLine() == "y")
-                    {
-                        attemptToRefresh = false;
-                    }
-                }
-
-                Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
-                    "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' (by default, no files will be loaded):");
-
-                var licenseFilePaths = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(licenseFilePaths))
-                {
-                    WriteMessage("No license files were provided.");
-                }
-                else
-                {
-                    var paths = licenseFilePaths.Split(';');
+                    var paths = args[3].Split(';');
 
                     foreach (var path in paths)
                     {
-                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "added successfully" : "could not be added";
+                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
                         WriteMessage($"File '{path}' {result}.");
                     }
                 }
+                if (args.Length == 3)
+                {
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                    attemptToRefresh = args[2] == "y" ? false : true;
+                }
+                else if (args.Length == 2)
+                {
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                }
+                else if (args.Length == 1)
+                {
+                    port = Convert.ToInt32(args[0]);
+                }
+                else
+                {
+                    Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
 
+                    try
+                    {
+                        var portString = Console.ReadLine();
+
+                        if (!string.IsNullOrWhiteSpace(portString))
+                        {
+                            port = Convert.ToInt32(portString);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage("The port was incorrect.");
+                        Console.ReadLine();
+                        return;
+                    }
+
+                    Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
+
+                    try
+                    {
+                        var cacheLengthString = Console.ReadLine();
+
+                        if (!string.IsNullOrWhiteSpace(cacheLengthString))
+                        {
+                            cacheLength = Convert.ToInt32(cacheLengthString);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage("The cache value could not be parsed. The default value will be used.");
+                        Console.ReadLine();
+                        return;
+                    }
+
+                    if (cacheLength > 0)
+                    {
+                        Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
+
+                        if (Console.ReadLine() == "y")
+                        {
+                            attemptToRefresh = false;
+                        }
+                    }
+
+                    Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
+                        "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' (by default, no files will be loaded):");
+
+                    var licenseFilePaths = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(licenseFilePaths))
+                    {
+                        WriteMessage("No license files were provided.");
+                    }
+                    else
+                    {
+                        var paths = licenseFilePaths.Split(';');
+
+                        foreach (var path in paths)
+                        {
+                            string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "added successfully" : "could not be added";
+                            WriteMessage($"File '{path}' {result}.");
+                        }
+                    }
+
+                }
             }
 
             // inspired by https://www.codeproject.com/Tips/485182/%2FTips%2F485182%2FCreate-a-local-server-in-Csharp.
