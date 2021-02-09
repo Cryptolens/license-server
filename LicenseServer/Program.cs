@@ -26,23 +26,32 @@ namespace LicenseServer
 
         public static int cacheLength = 0;
 
+        public static bool attemptToRefresh = true;
+
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v1.2\n");
+            Console.WriteLine("Cryptolens License Server v2.0\n");
 
-            if (args.Length == 3)
+            if(args.Length == 4)
             {
                 port = Convert.ToInt32(args[0]);
                 cacheLength = Convert.ToInt32(args[1]);
+                attemptToRefresh = args[2] == "y" ? false : true;
 
                 var paths = args[3].Split(';');
 
                 foreach (var path in paths)
                 {
-                    string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "OK" : "Error";
+                    string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
                     WriteMessage($"File '{path}' {result}.");
                 }
+            }
+            if (args.Length == 3)
+            {
+                port = Convert.ToInt32(args[0]);
+                cacheLength = Convert.ToInt32(args[1]);
+                attemptToRefresh = args[2] == "y" ? false : true;
             }
             else if (args.Length == 2)
             {
@@ -91,8 +100,18 @@ namespace LicenseServer
                     return;
                 }
 
+                if (cacheLength > 0)
+                {
+                    Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
+
+                    if (Console.ReadLine() == "y")
+                    {
+                        attemptToRefresh = false;
+                    }
+                }
+
                 Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
-                    "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' :");
+                    "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' (by default, no files will be loaded):");
 
                 var licenseFilePaths = Console.ReadLine();
 
@@ -106,7 +125,7 @@ namespace LicenseServer
 
                     foreach (var path in paths)
                     {
-                        string result = Helpers.LoadLicenseFromFile(licenseCache, path) ? "added successfully" : "could not be added";
+                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "added successfully" : "could not be added";
                         WriteMessage($"File '{path}' {result}.");
                     }
                 }
@@ -138,13 +157,19 @@ namespace LicenseServer
                 WriteMessage("Could not get the IP of the license server.");
             }
 
+            if (cacheLength > 0)
+            {
+                WriteMessage(Helpers.LoadFromLocalCache(licenseCache));
+
+                var tm = new System.Timers.Timer(3000);
+                tm.Elapsed += Tm_Elapsed;
+                tm.AutoReset = true;
+                tm.Enabled = true;
+            }
+
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
 
-            var tm = new System.Timers.Timer(3000);
-            tm.Elapsed += Tm_Elapsed;
-            tm.AutoReset = true;
-            tm.Enabled = true;
         }
 
         private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -184,7 +209,7 @@ namespace LicenseServer
 
                             if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
                             {
-                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate);
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh);
 
                                 if (activateResponse != null)
                                 {
@@ -209,8 +234,8 @@ namespace LicenseServer
                     }
                     else
                     {
-                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server -- port {port}</title></head>" +
-                        $"<body><p>Welcome to the <strong>Cryptolens License Server 1.2</strong> -- port {port}! If you see this message, it means " +
+                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server 2.0 -- port {port}</title></head>" +
+                        $"<body><p>Welcome to the <strong>Cryptolens License Server 2.0</strong> -- port {port}! If you see this message, it means " +
                         "everything is working properly.</em></p><p>" +
                         "If you can find its documentation <a href='https://github.com/cryptolens/license-server'>here</a>." +
                         "</p></body></html>");
