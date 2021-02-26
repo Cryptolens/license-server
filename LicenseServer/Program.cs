@@ -61,7 +61,7 @@ namespace LicenseServer
                 {
                     port = Convert.ToInt32(args[0]);
                     cacheLength = Convert.ToInt32(args[1]);
-                    attemptToRefresh = args[2] == "y" ? false : true;
+                    attemptToRefresh = args[2] == "work-offline" ? false : true;
 
                     var paths = args[3].Split(';');
 
@@ -75,7 +75,7 @@ namespace LicenseServer
                 {
                     port = Convert.ToInt32(args[0]);
                     cacheLength = Convert.ToInt32(args[1]);
-                    attemptToRefresh = args[2] == "y" ? false : true;
+                    attemptToRefresh = args[2] == "work-offline" ? false : true;
                 }
                 else if (args.Length == 2)
                 {
