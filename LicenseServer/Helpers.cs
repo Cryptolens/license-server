@@ -124,6 +124,9 @@ namespace LicenseServer
 
                 var response = Newtonsoft.Json.JsonConvert.DeserializeObject<RawResponse>(file);
 
+                LAKey key;
+                LAResult result;
+
                 if (!string.IsNullOrEmpty(response.LicenseKey))
                 {
                     // SignMethod = 1
@@ -132,16 +135,14 @@ namespace LicenseServer
                     var licenseKey = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(licenseBytes)).ToLicenseKey();
                     licenseKey.RawResponse = response;
 
-                    LAKey key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 1 };
-                    licenseCache.Add(key,
-                      new LAResult
-                      {
-                          LicenseKey = licenseKey,
-                          SignDate = licenseKey.SignDate,
-                          Response = file
-                      });
-
-                    keysToUpdate.TryAdd(key, file);
+                    key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 1 };
+                    
+                    result = new LAResult
+                    {
+                        LicenseKey = licenseKey,
+                        SignDate = licenseKey.SignDate,
+                        Response = file
+                    };
 
                 }
                 else
@@ -150,8 +151,8 @@ namespace LicenseServer
 
                     var licenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(file);
 
-                    LAKey key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 0 };
-                    LAResult result = new LAResult
+                    key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 0 };
+                    result = new LAResult
                     {
                         LicenseKey = licenseKey,
                         SignDate = licenseKey.SignDate,
@@ -159,11 +160,23 @@ namespace LicenseServer
                         JsonConvert.SerializeObject(new KeyInfoResult { Result = ResultType.Success, LicenseKey = licenseKey })
                     };
 
-                    licenseCache.Add(key, result);
-
-                    keysToUpdate.TryAdd(key, result.Response);
-
                 }
+
+                if(licenseCache.ContainsKey(key))
+                {
+                    if(licenseCache[key].SignDate < result.SignDate)
+                    {
+                        licenseCache[key] = result;
+                        keysToUpdate[key] = result.Response;
+
+                    }
+                }
+                else
+                {
+                    licenseCache.Add(key, result);
+                    keysToUpdate.TryAdd(key, result.Response);
+                }
+
             }
             catch (Exception ex)
             {
