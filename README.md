@@ -36,11 +36,13 @@ If you use the default firewall, it can be opened as follows:
 Depending on which of our client SDKs you use, there will be a different way to provide the URL of the license server. For example, if you use the [.NET SDK](https://github.com/Cryptolens/cryptolens-dotnet), every API method (such as Key.Activate) will have an extra parameter `LicenseServerUrl`, which can be used to provide the URL of the license server.
 
 ## Enable caching of licenses
-
-Since v1.2 there is a way to cache responses to `Key.Activate`, which helps to reduce the number of requests sent to Cryptolens. This is useful especially if your clients would have temporary internet connectivity issues. To enable license caching, you need to specify how long the license server should store each license. Note: if your application uses the `signatureExpirationInterval` parameter in `HasValidSignature`, the lifetime of the cache on the license server needs to be either equal to `signatureExpirationInterval` or less. Otherwise, your client application will throw an error.
+Since v2.0 there is a way to cache responses to `Key.Activate`, which helps to reduce the number of requests sent to Cryptolens. This is useful especially if your clients would have temporary internet connectivity issues. To enable license caching, you need to specify how long the license server should store each license. Note: if your application uses the `signatureExpirationInterval` parameter in `HasValidSignature`, the lifetime of the cache on the license server needs to be either equal to `signatureExpirationInterval` or less. Otherwise, your client application will throw an error.
 
 As an example, to launch the server that caches licenses for 10 days, it can be started as follows:
 
 ```
 C:\> LicenseServer.exe 8080 10
 ```
+
+### Customers who are permanently offline
+The default behaviour of the server is to *always* attempt to get the latest copy of the license. However, if you know that the license server will not have access to the internet, it is better to enable the *offline mode* so that the license server always reads from cache.

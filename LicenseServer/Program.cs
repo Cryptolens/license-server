@@ -50,8 +50,8 @@ namespace LicenseServer
 
                     foreach (var file in config.ActivationFiles)
                     {
-                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
-                        WriteMessage($"File '{file}' {result}.");
+                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                        WriteMessage($"Path '{file}' {result}");
                     }
                 }
             }
@@ -67,8 +67,8 @@ namespace LicenseServer
 
                     foreach (var path in paths)
                     {
-                        string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
-                        WriteMessage($"File '{path}' {result}.");
+                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
+                        WriteMessage($"Path '{path}' {result}");
                     }
                 }
                 if (args.Length == 3)
@@ -135,7 +135,7 @@ namespace LicenseServer
                     }
 
                     Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
-                        "applications on your network can access it. If you have multiple license files, they can be separated with a semi-colon ';' (by default, no files will be loaded):");
+                        "applications on your network can access it. If you have multiple license files, they can either be separated with a semi-colon ';' or by specifying the folder (by default, no files will be loaded):");
 
                     var licenseFilePaths = Console.ReadLine();
 
@@ -149,8 +149,8 @@ namespace LicenseServer
 
                         foreach (var path in paths)
                         {
-                            string result = Helpers.LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "added successfully" : "could not be added";
-                            WriteMessage($"File '{path}' {result}.");
+                            string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
+                            WriteMessage($"Path '{path}' {result}");
                         }
                     }
 
@@ -184,7 +184,7 @@ namespace LicenseServer
 
             if (cacheLength > 0)
             {
-                WriteMessage(Helpers.LoadFromLocalCache(licenseCache));
+                WriteMessage(Helpers.LoadFromLocalCache(licenseCache, WriteMessage));
 
                 var tm = new System.Timers.Timer(3000);
                 tm.Elapsed += Tm_Elapsed;

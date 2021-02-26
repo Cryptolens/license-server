@@ -116,6 +116,32 @@ namespace LicenseServer
         }
 
 
+
+        public static bool LoadLicenseFromPath(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string path, Action<string> updates)
+        {
+            try
+            {
+                if(System.IO.File.GetAttributes(path).HasFlag(FileAttributes.Directory))
+                {
+                    var files = Directory.GetFiles(path, "*.skm");
+
+                    foreach (var file in files)
+                    {
+                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
+                        updates($"File '{path}' {result}.");
+                    }
+                }
+                else
+                {
+                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
+                    updates($"File '{path}' {result}.");
+                }
+            }
+            catch(Exception ex) { return false; }
+
+            return true;
+        }
+
         public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile)
         {
             try
@@ -254,7 +280,7 @@ namespace LicenseServer
             }
         }
 
-        public static string LoadFromLocalCache(Dictionary<LAKey, LAResult> licenseCache)
+        public static string LoadFromLocalCache(Dictionary<LAKey, LAResult> licenseCache, Action<string> updates)
         {
             if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache"))) { return "Could not load the cache."; }
 
@@ -296,12 +322,18 @@ namespace LicenseServer
                     {
                         filecount++;
                         licenseCache[key] = result;
+                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overriden.");
+                    }
+                    else
+                    {
+                        updates($"The file '{file}' was not loaded from the cache, since a newer version was provided manually.");
                     }
                 }
                 else
                 {
                     licenseCache.Add(key, result);
                     filecount++;
+                    updates($"The file '{file}' was loaded from the cache.");
                 }
                 
             }
