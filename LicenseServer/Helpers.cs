@@ -247,6 +247,7 @@ namespace LicenseServer
 
             var files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
 
+            int filecount = 0;
             foreach (var file in files)
             {
                 var fileContent = File.ReadAllText(file);
@@ -276,10 +277,23 @@ namespace LicenseServer
                     result.SignDate = result.LicenseKey.SignDate;
                 }
 
-                licenseCache.Add(key, result);
+                if (licenseCache.ContainsKey(key))
+                {
+                    if(licenseCache[key].SignDate < result.SignDate)
+                    {
+                        filecount++;
+                        licenseCache[key] = result;
+                    }
+                }
+                else
+                {
+                    licenseCache.Add(key, result);
+                    filecount++;
+                }
+                
             }
 
-            return $"Loaded {files.Length} file(s) from cache.";
+            return $"Loaded {filecount}/{files.Count()} file(s) from cache.";
         }
     }
 
