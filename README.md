@@ -66,7 +66,7 @@ C:\> LicenseServer.exe 8080 10 work-offline "C:\Users\User Name\Downloads";"C:\t
 ```
 
 ### Loading settings from a config file
-To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server.
+To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 
 ```
 {
@@ -76,3 +76,5 @@ To make it easier to deploy the license server on customer site, you can add all
     "ActivationFiles" : ["C:\Users\User Name\Downloads"]
 }
 ```
+
+The `ActivationFiles` can either reference a specific file or a folder. If it references a folder, all files with the `.skm` extension will be loaded.
