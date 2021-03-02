@@ -36,6 +36,9 @@ If you use the default firewall, it can be opened as follows:
 Depending on which of our client SDKs you use, there will be a different way to provide the URL of the license server. For example, if you use the [.NET SDK](https://github.com/Cryptolens/cryptolens-dotnet), every API method (such as Key.Activate) will have an extra parameter `LicenseServerUrl`, which can be used to provide the URL of the license server.
 
 ## Additional features
+
+There are two versions of the license server, `v1.*` and `v2.*`. If you only need the request forwarding feature, `v.1.*` version will suffice. If you want to use the extra features listed below, you can use `v2.*` version instead.
+
 ### Enable caching of licenses
 Since v2.0 there is a way to cache responses to `Key.Activate`, which helps to reduce the number of requests sent to Cryptolens. This is useful especially if your clients would have temporary internet connectivity issues. To enable license caching, you need to specify how long the license server should store each license. Note: if your application uses the `signatureExpirationInterval` parameter in `HasValidSignature`, the lifetime of the cache on the license server needs to be either equal to `signatureExpirationInterval` or less. Otherwise, your client application will throw an error.
 
