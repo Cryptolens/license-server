@@ -10,6 +10,8 @@ using System.IO;
 using System.Web;
 using System.Net.Sockets;
 
+using System.Collections.Concurrent;
+
 namespace LicenseServer
 {
     class Program
@@ -20,58 +22,138 @@ namespace LicenseServer
 
         public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
 
+        public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
+
         public static int cacheLength = 0;
+
+        public static bool attemptToRefresh = true;
 
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v1.2\n");
+            Console.WriteLine("Cryptolens License Server v2.0\n");
 
-            if (args.Length == 2)
+            try
             {
-                port = Convert.ToInt32(args[0]);
-                cacheLength = Convert.ToInt32(args[1]);
-            }
-            else if (args.Length == 1)
-            {
-                port = Convert.ToInt32(args[0]);
-            }
-            else
-            {
-                Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
+                var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));
 
-                try
+                WriteMessage("Loading settings from config.json.");
+
+                if (config != null)
                 {
-                    var portString = Console.ReadLine();
+                    cacheLength = config.CacheLength;
+                    WriteMessage($"Cache length set to {cacheLength}");
+                    port = config.Port;
+                    WriteMessage($"Port set to {port}");
+                    attemptToRefresh = !config.OfflineMode;
+                    WriteMessage($"Offline mode is set to {!attemptToRefresh}");
 
-                    if (!string.IsNullOrWhiteSpace(portString))
+                    foreach (var file in config.ActivationFiles)
                     {
-                        port = Convert.ToInt32(portString);
+                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                        WriteMessage($"Path '{file}' {result}");
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex3)
+            {
+                if (args.Length == 4)
                 {
-                    WriteMessage("The port was incorrect.");
-                    Console.ReadLine();
-                    return;
-                }
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                    attemptToRefresh = args[2] == "work-offline" ? false : true;
 
-                Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
+                    var paths = args[3].Split(';');
 
-                try
-                {
-                    var cacheLengthString = Console.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(cacheLengthString))
+                    foreach (var path in paths)
                     {
-                        cacheLength = Convert.ToInt32(cacheLengthString);
+                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
+                        WriteMessage($"Path '{path}' {result}");
                     }
                 }
-                catch (Exception ex)
+                if (args.Length == 3)
                 {
-                    WriteMessage("The cache value could not be parsed. The default value will be used.");
-                    Console.ReadLine();
-                    return;
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                    attemptToRefresh = args[2] == "work-offline" ? false : true;
+                }
+                else if (args.Length == 2)
+                {
+                    port = Convert.ToInt32(args[0]);
+                    cacheLength = Convert.ToInt32(args[1]);
+                }
+                else if (args.Length == 1)
+                {
+                    port = Convert.ToInt32(args[0]);
+                }
+                else
+                {
+                    Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
+
+                    try
+                    {
+                        var portString = Console.ReadLine();
+
+                        if (!string.IsNullOrWhiteSpace(portString))
+                        {
+                            port = Convert.ToInt32(portString);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage("The port was incorrect.");
+                        Console.ReadLine();
+                        return;
+                    }
+
+                    Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
+
+                    try
+                    {
+                        var cacheLengthString = Console.ReadLine();
+
+                        if (!string.IsNullOrWhiteSpace(cacheLengthString))
+                        {
+                            cacheLength = Convert.ToInt32(cacheLengthString);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage("The cache value could not be parsed. The default value will be used.");
+                        Console.ReadLine();
+                        return;
+                    }
+
+                    if (cacheLength > 0)
+                    {
+                        Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
+
+                        if (Console.ReadLine() == "y")
+                        {
+                            attemptToRefresh = false;
+                        }
+                    }
+
+                    Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
+                        "applications on your network can access it. If you have multiple license files, they can either be separated with a semi-colon ';' or by specifying the folder (by default, no files will be loaded):");
+
+                    var licenseFilePaths = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(licenseFilePaths))
+                    {
+                        WriteMessage("No license files were provided.");
+                    }
+                    else
+                    {
+                        var paths = licenseFilePaths.Split(';');
+
+                        foreach (var path in paths)
+                        {
+                            string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
+                            WriteMessage($"Path '{path}' {result}");
+                        }
+                    }
+
                 }
             }
 
@@ -79,7 +161,7 @@ namespace LicenseServer
 
             try
             {
-                httpListener.Prefixes.Add($"http://+:{port}/"); 
+                httpListener.Prefixes.Add($"http://+:{port}/");
                 httpListener.Start();
                 WriteMessage("Starting server...");
             }
@@ -95,13 +177,29 @@ namespace LicenseServer
             {
                 WriteMessage($"Server address is: {GetLocalIPAddress()}:{port}");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 WriteMessage("Could not get the IP of the license server.");
             }
 
+            if (cacheLength > 0)
+            {
+                WriteMessage(Helpers.LoadFromLocalCache(licenseCache, WriteMessage));
+
+                var tm = new System.Timers.Timer(3000);
+                tm.Elapsed += Tm_Elapsed;
+                tm.AutoReset = true;
+                tm.Enabled = true;
+            }
+
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
+
+        }
+
+        private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Helpers.UpdateLocalCache(keysToUpdate);
         }
 
         static void ResponseThread()
@@ -136,7 +234,7 @@ namespace LicenseServer
 
                             if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
                             {
-                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context);
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh);
 
                                 if (activateResponse != null)
                                 {
@@ -161,8 +259,8 @@ namespace LicenseServer
                     }
                     else
                     {
-                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server -- port {port}</title></head>" +
-                        $"<body><p>Welcome to the <strong>Cryptolens License Server 1.2</strong> -- port {port}! If you see this message, it means " +
+                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server 2.0 -- port {port}</title></head>" +
+                        $"<body><p>Welcome to the <strong>Cryptolens License Server 2.0</strong> -- port {port}! If you see this message, it means " +
                         "everything is working properly.</em></p><p>" +
                         "If you can find its documentation <a href='https://github.com/cryptolens/license-server'>here</a>." +
                         "</p></body></html>");

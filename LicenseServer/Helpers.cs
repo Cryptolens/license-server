@@ -12,11 +12,13 @@ using Newtonsoft.Json;
 using SKM.V3;
 using SKM.V3.Models;
 
+using System.Collections.Concurrent;
+
 namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -35,16 +37,32 @@ namespace LicenseServer
             if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
-                if (ts.Days >= cacheLength)
+                if (ts.Days >= cacheLength || attemptToRefresh)
                 {
                     // need to obtain new license
 
-                    result.Response = ObtainNewLicense(stream, newRequest, context);
+                    try
+                    {
+                        result.Response = ObtainNewLicense(stream, newRequest, context);
+                    }
+                    catch (Exception ex) 
+                    { 
+                        if(ts.Days >= cacheLength)
+                        {
+                            return $"Could not retrieve an updated license '{licenseKey}' and machine code '{machineCode}'.";
+                        }
+                        else if (attemptToRefresh)
+                        {
+                            ReturnResponse(result.Response, context);
+                            return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
+                        }
+                    }
+
 
                     if (signMethod == 1)
                     {
                         var resultObject = JsonConvert.DeserializeObject<RawResponse>(result.Response);
-                        var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(resultObject.LicenseKey).ToLicenseKey();
+                        var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(Convert.FromBase64String(resultObject.LicenseKey))).ToLicenseKey();
                         result.SignDate = license2.SignDate;
                         result.LicenseKey = license2;
                     }
@@ -54,6 +72,8 @@ namespace LicenseServer
                         result.SignDate = resultObject.LicenseKey.SignDate;
                         result.LicenseKey = resultObject.LicenseKey;
                     }
+
+                    keysToUpdate.AddOrUpdate(key, x => result.Response, (x, y) => result.Response);
 
                     return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
 
@@ -75,7 +95,7 @@ namespace LicenseServer
                     if (signMethod == 1)
                     {
                         var resultObject = JsonConvert.DeserializeObject<RawResponse>(result.Response);
-                        var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(resultObject.LicenseKey).ToLicenseKey();
+                        var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(Convert.FromBase64String(resultObject.LicenseKey))).ToLicenseKey();
                         result.SignDate = license2.SignDate;
                         result.LicenseKey = license2;
                     }
@@ -87,10 +107,109 @@ namespace LicenseServer
                     }
 
                     licenseCache.Add(key, result);
+                    keysToUpdate.AddOrUpdate(key, x => result.Response, (x, y) => result.Response);
+
                     return $"Added to the cache the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
                 return null;
             }
+        }
+
+
+
+        public static bool LoadLicenseFromPath(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string path, Action<string> updates)
+        {
+            try
+            {
+                if(System.IO.File.GetAttributes(path).HasFlag(FileAttributes.Directory))
+                {
+                    var files = Directory.GetFiles(path, "*.skm");
+
+                    foreach (var file in files)
+                    {
+                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
+                        updates($"File '{path}' {result}.");
+                    }
+                }
+                else
+                {
+                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
+                    updates($"File '{path}' {result}.");
+                }
+            }
+            catch(Exception ex) { return false; }
+
+            return true;
+        }
+
+        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile)
+        {
+            try
+            {
+                var file = System.IO.File.ReadAllText(pathToFile);
+
+                var response = Newtonsoft.Json.JsonConvert.DeserializeObject<RawResponse>(file);
+
+                LAKey key;
+                LAResult result;
+
+                if (!string.IsNullOrEmpty(response.LicenseKey))
+                {
+                    // SignMethod = 1
+
+                    var licenseBytes = Convert.FromBase64String(response.LicenseKey);
+                    var licenseKey = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(licenseBytes)).ToLicenseKey();
+                    licenseKey.RawResponse = response;
+
+                    key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 1 };
+                    
+                    result = new LAResult
+                    {
+                        LicenseKey = licenseKey,
+                        SignDate = licenseKey.SignDate,
+                        Response = file
+                    };
+
+                }
+                else
+                {
+                    // SignMethod = 0
+
+                    var licenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(file);
+
+                    key = new LAKey { Key = licenseKey.Key, ProductId = licenseKey.ProductId, SignMethod = 0 };
+                    result = new LAResult
+                    {
+                        LicenseKey = licenseKey,
+                        SignDate = licenseKey.SignDate,
+                        Response =
+                        JsonConvert.SerializeObject(new KeyInfoResult { Result = ResultType.Success, LicenseKey = licenseKey })
+                    };
+
+                }
+
+                if(licenseCache.ContainsKey(key))
+                {
+                    if(licenseCache[key].SignDate < result.SignDate)
+                    {
+                        licenseCache[key] = result;
+                        keysToUpdate[key] = result.Response;
+
+                    }
+                }
+                else
+                {
+                    licenseCache.Add(key, result);
+                    keysToUpdate.TryAdd(key, result.Response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public static string ObtainNewLicense(byte[] originalStream, HttpWebRequest newRequest, HttpListenerContext context)
@@ -142,7 +261,85 @@ namespace LicenseServer
             }
         }
 
+        public static void UpdateLocalCache(ConcurrentDictionary<LAKey, string> keysToUpdate)
+        {
+            var keysToSave = keysToUpdate.Keys.ToList();
 
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache")))
+            {
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
+            }
+
+            foreach (var key in keysToSave)
+            {
+                string res = null;
+                if (keysToUpdate.TryRemove(key, out res))
+                {
+                    System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache", $"{key.ProductId}.{key.Key}.{key.SignMethod}.skm"), res);
+                }
+            }
+        }
+
+        public static string LoadFromLocalCache(Dictionary<LAKey, LAResult> licenseCache, Action<string> updates)
+        {
+            if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache"))) { return "Could not load the cache."; }
+
+            var files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
+
+            int filecount = 0;
+            foreach (var file in files)
+            {
+                var fileContent = File.ReadAllText(file);
+                string[] extractedFileInfo = Path.GetFileName(file).Split('.');
+
+                LicenseKey license = new LicenseKey();
+                
+                var key = new LAKey
+                {
+                    ProductId = Convert.ToInt32(extractedFileInfo[0]),
+                    Key = extractedFileInfo[1],
+                    SignMethod = Convert.ToInt32(extractedFileInfo[2])
+                };
+
+                var result = new LAResult();
+                result.Response = fileContent;
+
+                if (key.SignMethod == 0)
+                {
+                    result.LicenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(fileContent);
+                    result.SignDate = result.LicenseKey.SignDate;
+                }
+                else
+                {
+                    var response = Newtonsoft.Json.JsonConvert.DeserializeObject<RawResponse>(fileContent);
+                    result.LicenseKey = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(Convert.FromBase64String(response.LicenseKey))).ToLicenseKey();
+                    result.SignDate = result.LicenseKey.SignDate;
+                }
+
+                if (licenseCache.ContainsKey(key))
+                {
+                    if(licenseCache[key].SignDate < result.SignDate)
+                    {
+                        filecount++;
+                        licenseCache[key] = result;
+                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overriden.");
+                    }
+                    else
+                    {
+                        updates($"The file '{file}' was not loaded from the cache, since a newer version was provided manually.");
+                    }
+                }
+                else
+                {
+                    licenseCache.Add(key, result);
+                    filecount++;
+                    updates($"The file '{file}' was loaded from the cache.");
+                }
+                
+            }
+
+            return $"Loaded {filecount}/{files.Count()} file(s) from cache.";
+        }
     }
 
     public enum APIMethod

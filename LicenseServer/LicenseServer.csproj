@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="LicenseAndActivation.cs" />
     <Compile Include="LicenseKeyPI.cs" />
