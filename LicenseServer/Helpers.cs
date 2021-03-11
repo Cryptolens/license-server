@@ -6,13 +6,12 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Web;
-
 using Newtonsoft.Json;
 using SKM.V3;
 using SKM.V3.Models;
 
 using System.Collections.Concurrent;
+using System.Web;
 
 namespace LicenseServer
 {
@@ -238,11 +237,12 @@ namespace LicenseServer
 
         public static APIMethod GetAPIMethod(string path)
         {
-            if(path.ToLower().StartsWith("/api/key/activate"))
+            if(path.ToLower().Replace("//","/").Contains("/api/key/activate"))
             {
                 return APIMethod.Activate;
             }
 
+            
             return APIMethod.Unknown;
         }
 
