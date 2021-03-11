@@ -20,7 +20,16 @@ You can also specify the port inside the application.
 
 > Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
-## Allowing ports
+### Running on Linux and Mac
+To run the license server on either Linux or Mac, you need to make sure that .NET 5 runtime is installed (read more [here](https://dotnet.microsoft.com/download/dotnet/5.0)). Once it is installed, the license server can be started as follows:
+
+```
+dotnet LicenseServer.dll
+```
+
+In the rest of the article, you can just replace `C:\` with `dotnet`. Everything else is the same.
+
+## Allowing ports (Windows only)
 
 In order to allow other computers in the network to access the license server, you need to open up the desired port in the firewall. 
 If you use the default firewall, it can be opened as follows:
