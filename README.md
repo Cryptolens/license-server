@@ -27,7 +27,7 @@ To run the license server on either Linux or Mac, you need to make sure that .NE
 dotnet LicenseServer.dll
 ```
 
-In the rest of the article, you can just need to add `dotnet` before launching the server. Everything else is the same. Based on our tests, no sudo access is needed to run the license server on Linux.
+In the rest of the article, you just need to add `dotnet` before launching the server. Everything else is the same. Based on our tests, no sudo access is needed to run the license server on Linux.
 
 ## Allowing ports (Windows only)
 
