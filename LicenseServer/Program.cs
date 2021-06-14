@@ -12,6 +12,9 @@ using System.Net.Sockets;
 
 using System.Collections.Concurrent;
 
+using SKM.V3;
+using SKM.V3.Models;
+
 namespace LicenseServer
 {
     class Program
@@ -24,9 +27,13 @@ namespace LicenseServer
 
         public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
 
+        public static ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>> activatedMachinesFloating = new ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>>();
+
         public static int cacheLength = 0;
 
         public static bool attemptToRefresh = true;
+
+        public static bool localFloatingServer = false;
 
 
         static void Main(string[] args)
@@ -47,6 +54,9 @@ namespace LicenseServer
                     WriteMessage($"Port set to {port}");
                     attemptToRefresh = !config.OfflineMode;
                     WriteMessage($"Offline mode is set to {!attemptToRefresh}");
+
+                    localFloatingServer = config.LocalFloatingServer;
+                    WriteMessage($"Local floating license server is set to {localFloatingServer}");
 
                     foreach (var file in config.ActivationFiles)
                     {
@@ -234,7 +244,7 @@ namespace LicenseServer
 
                             if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
                             {
-                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh);
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh, localFloatingServer, activatedMachinesFloating);
 
                                 if (activateResponse != null)
                                 {

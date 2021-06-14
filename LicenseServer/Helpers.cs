@@ -17,7 +17,7 @@ namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>> activatedMachinesFloating)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -28,12 +28,38 @@ namespace LicenseServer
             int.TryParse(nvc.Get("SignMethod"), out signMethod);
             var licenseKey = nvc.Get("Key");
             var machineCode = nvc.Get("MachineCode");
+            int floatingTimeInterval = -1;
+            int.TryParse(nvc.Get("FloatingTimeInterval"), out floatingTimeInterval);
 
             LAResult result = null;
 
             var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = signMethod };
-            
-            if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
+
+            if (floatingTimeInterval > 0 && localFloatingServer)
+            {
+                //floating license
+
+                if(!licenseCache.TryGetValue(key, out result))
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the license file (floating license)." });
+                    ReturnResponse(error, context);
+                    return $"Could not find the license file for '{licenseKey}' to continue with the floating activation.";
+                }
+
+                if(result.LicenseKey.MaxNoOfMachines > 0)
+                {
+                    if(activatedMachinesFloating[key].Count < result.LicenseKey.MaxNoOfMachines)
+                    {
+                        activatedMachinesFloating[key].Add(new ActivationData { Mid = machineCode, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
+                    }
+
+                    // return new license
+                }
+
+                return null;
+
+            }
+            else if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
                 if (ts.Days >= cacheLength || attemptToRefresh)

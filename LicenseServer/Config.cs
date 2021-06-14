@@ -12,6 +12,7 @@ namespace LicenseServer
         public int CacheLength { get; set; }
         public bool OfflineMode { get; set; }
         public List<string> ActivationFiles { get; set; }
+        public bool LocalFloatingServer { get; set; }
 
     }
 }
