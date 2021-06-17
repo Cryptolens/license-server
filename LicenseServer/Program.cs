@@ -27,7 +27,7 @@ namespace LicenseServer
 
         public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
 
-        public static ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>> activatedMachinesFloating = new ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>>();
+        public static ConcurrentDictionary<LAKeyBase, ConcurrentBag<ActivationData>> activatedMachinesFloating = new ConcurrentDictionary<LAKeyBase, ConcurrentBag<ActivationData>>();
 
         public static int cacheLength = 0;
 

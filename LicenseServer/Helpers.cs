@@ -17,7 +17,7 @@ namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKey, ConcurrentBag<ActivationData>> activatedMachinesFloating)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentBag<ActivationData>> activatedMachinesFloating)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -35,11 +35,20 @@ namespace LicenseServer
 
             var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = signMethod };
 
+            var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = Math.Abs(signMethod-1) };
+
             if (floatingTimeInterval > 0 && localFloatingServer)
             {
+                if(signMethod == 0)
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: SignMethod=1 is needed to use floating licensing offline." });
+                    ReturnResponse(error, context);
+                    return $"SignMethod was not set to 1 for '{licenseKey}', which is needed to continue with the floating activation.";
+                }
+
                 //floating license
 
-                if(!licenseCache.TryGetValue(key, out result))
+                if(!licenseCache.TryGetValue(key, out result) && !licenseCache.TryGetValue(keyAlt, out result))
                 {
                     var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the license file (floating license)." });
                     ReturnResponse(error, context);
@@ -48,10 +57,52 @@ namespace LicenseServer
 
                 if(result.LicenseKey.MaxNoOfMachines > 0)
                 {
-                    if(activatedMachinesFloating[key].Count < result.LicenseKey.MaxNoOfMachines)
+                    if(activatedMachinesFloating[key].Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    {
+                        var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
+                                                      .OrderBy(x => x.Time).First();
+                        activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+
+                        var licenseKeyToReturn = new LicenseKeyPI { };
+
+                        licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time = 
+                          Helpers.ToUnixTimestamp(activation.Time.Value)} };
+                        licenseKeyToReturn.Block = result.LicenseKey.Block;
+                        licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
+                        licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
+
+                        if (licenseKeyToReturn != null)
+                        {
+                            licenseKeyToReturn.Customer = new CustomerPI { CompanyName = result.LicenseKey.Customer.CompanyName, Created = ToUnixTimestamp(result.LicenseKey.Customer.Created), Email = result.LicenseKey.Customer.Email, Id = result.LicenseKey.Customer.Id, Name = result.LicenseKey.Customer.Name };
+                        }
+
+                        licenseKeyToReturn.DataObjects = result.LicenseKey.DataObjects;
+                        licenseKeyToReturn.F1 = result.LicenseKey.F1;
+                        licenseKeyToReturn.F2 = result.LicenseKey.F2;
+                        licenseKeyToReturn.F3 = result.LicenseKey.F3;
+                        licenseKeyToReturn.F4 = result.LicenseKey.F4;
+                        licenseKeyToReturn.F5 = result.LicenseKey.F5;
+                        licenseKeyToReturn.F6 = result.LicenseKey.F6;
+                        licenseKeyToReturn.F7 = result.LicenseKey.F7;
+                        licenseKeyToReturn.F8 = result.LicenseKey.F8;
+
+                        licenseKeyToReturn.GlobalId = result.LicenseKey.GlobalId;
+                        licenseKeyToReturn.MaxNoOfMachines = result.LicenseKey.MaxNoOfMachines;
+                        licenseKeyToReturn.ID = result.LicenseKey.ID;
+                        licenseKeyToReturn.Key = result.LicenseKey.Key;
+
+                        licenseKeyToReturn.Notes = result.LicenseKey.Notes;
+                        licenseKeyToReturn.Period = result.LicenseKey.Period;
+                        licenseKeyToReturn.TrialActivation = result.LicenseKey.TrialActivation;
+                        licenseKeyToReturn.ProductId = result.LicenseKey.ProductId;
+                        licenseKeyToReturn.SignDate = ToUnixTimestamp(DateTime.UtcNow);
+
+                    }
+                    else if (activatedMachinesFloating[key].Count(x=> x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
                     {
                         activatedMachinesFloating[key].Add(new ActivationData { Mid = machineCode, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
                     }
+
 
                     // return new license
                 }
@@ -365,6 +416,13 @@ namespace LicenseServer
             }
 
             return $"Loaded {filecount}/{files.Count()} file(s) from cache.";
+        }
+
+        public static long ToUnixTimestamp(DateTime time)
+        {
+            var epoch = time - new DateTime(1970, 1, 1, 0, 0, 0);
+
+            return (long)epoch.TotalSeconds;
         }
     }
 
