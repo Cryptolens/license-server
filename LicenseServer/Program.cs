@@ -33,12 +33,12 @@ namespace LicenseServer
 
         public static bool attemptToRefresh = true;
 
-        public static bool localFloatingServer = false;
+        public static bool localFloatingServer = true;
 
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v2.0\n");
+            Console.WriteLine("Cryptolens License Server v2.1\n");
 
             try
             {
