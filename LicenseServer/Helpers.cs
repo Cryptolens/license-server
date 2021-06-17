@@ -57,48 +57,17 @@ namespace LicenseServer
 
                 if(result.LicenseKey.MaxNoOfMachines > 0)
                 {
-                    if(activatedMachinesFloating[key].Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    if (activatedMachinesFloating[key].Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
                     {
                         var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
                                                       .OrderBy(x => x.Time).First();
                         activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
 
-                        var licenseKeyToReturn = new LicenseKeyPI { };
-
-                        licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time = 
-                          Helpers.ToUnixTimestamp(activation.Time.Value)} };
-                        licenseKeyToReturn.Block = result.LicenseKey.Block;
-                        licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
-                        licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
-
-                        if (licenseKeyToReturn != null)
-                        {
-                            licenseKeyToReturn.Customer = new CustomerPI { CompanyName = result.LicenseKey.Customer.CompanyName, Created = ToUnixTimestamp(result.LicenseKey.Customer.Created), Email = result.LicenseKey.Customer.Email, Id = result.LicenseKey.Customer.Id, Name = result.LicenseKey.Customer.Name };
-                        }
-
-                        licenseKeyToReturn.DataObjects = result.LicenseKey.DataObjects;
-                        licenseKeyToReturn.F1 = result.LicenseKey.F1;
-                        licenseKeyToReturn.F2 = result.LicenseKey.F2;
-                        licenseKeyToReturn.F3 = result.LicenseKey.F3;
-                        licenseKeyToReturn.F4 = result.LicenseKey.F4;
-                        licenseKeyToReturn.F5 = result.LicenseKey.F5;
-                        licenseKeyToReturn.F6 = result.LicenseKey.F6;
-                        licenseKeyToReturn.F7 = result.LicenseKey.F7;
-                        licenseKeyToReturn.F8 = result.LicenseKey.F8;
-
-                        licenseKeyToReturn.GlobalId = result.LicenseKey.GlobalId;
-                        licenseKeyToReturn.MaxNoOfMachines = result.LicenseKey.MaxNoOfMachines;
-                        licenseKeyToReturn.ID = result.LicenseKey.ID;
-                        licenseKeyToReturn.Key = result.LicenseKey.Key;
-
-                        licenseKeyToReturn.Notes = result.LicenseKey.Notes;
-                        licenseKeyToReturn.Period = result.LicenseKey.Period;
-                        licenseKeyToReturn.TrialActivation = result.LicenseKey.TrialActivation;
-                        licenseKeyToReturn.ProductId = result.LicenseKey.ProductId;
-                        licenseKeyToReturn.SignDate = ToUnixTimestamp(DateTime.UtcNow);
-
+                        FloatingResult(result, activation, machineCode, context);
+ 
+                        return $"Floating license {licenseKey} returned successfully.";
                     }
-                    else if (activatedMachinesFloating[key].Count(x=> x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    else if (activatedMachinesFloating[key].Count(x => x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
                     {
                         activatedMachinesFloating[key].Add(new ActivationData { Mid = machineCode, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
                     }
@@ -191,7 +160,66 @@ namespace LicenseServer
             }
         }
 
+        public static void FloatingResult(LAResult result, ActivationData activation, string machineCode, HttpListenerContext context)
+        {
 
+            var licenseKeyToReturn = new LicenseKeyPI { };
+
+            licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time =
+                          ToUnixTimestamp(activation.Time.Value)} };
+            licenseKeyToReturn.Block = result.LicenseKey.Block;
+            licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
+            licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
+
+            if (licenseKeyToReturn != null)
+            {
+                licenseKeyToReturn.Customer = new CustomerPI { CompanyName = result.LicenseKey.Customer.CompanyName, Created = ToUnixTimestamp(result.LicenseKey.Customer.Created), Email = result.LicenseKey.Customer.Email, Id = result.LicenseKey.Customer.Id, Name = result.LicenseKey.Customer.Name };
+            }
+
+            licenseKeyToReturn.DataObjects = result.LicenseKey.DataObjects;
+            licenseKeyToReturn.F1 = result.LicenseKey.F1;
+            licenseKeyToReturn.F2 = result.LicenseKey.F2;
+            licenseKeyToReturn.F3 = result.LicenseKey.F3;
+            licenseKeyToReturn.F4 = result.LicenseKey.F4;
+            licenseKeyToReturn.F5 = result.LicenseKey.F5;
+            licenseKeyToReturn.F6 = result.LicenseKey.F6;
+            licenseKeyToReturn.F7 = result.LicenseKey.F7;
+            licenseKeyToReturn.F8 = result.LicenseKey.F8;
+
+            licenseKeyToReturn.GlobalId = result.LicenseKey.GlobalId;
+            licenseKeyToReturn.MaxNoOfMachines = result.LicenseKey.MaxNoOfMachines;
+            licenseKeyToReturn.ID = result.LicenseKey.ID;
+            licenseKeyToReturn.Key = result.LicenseKey.Key;
+
+            licenseKeyToReturn.Notes = result.LicenseKey.Notes;
+            licenseKeyToReturn.Period = result.LicenseKey.Period;
+            licenseKeyToReturn.TrialActivation = result.LicenseKey.TrialActivation;
+            licenseKeyToReturn.ProductId = result.LicenseKey.ProductId;
+            licenseKeyToReturn.SignDate = ToUnixTimestamp(DateTime.UtcNow);
+
+            var data = Newtonsoft.Json.JsonConvert.SerializeObject(licenseKeyToReturn);
+
+            var signature = "";
+
+            byte[] dataSign = System.Text.UTF8Encoding.UTF8.GetBytes(data);
+
+            System.Security.Cryptography.RSACryptoServiceProvider rsa = new System.Security.Cryptography.RSACryptoServiceProvider(2048);
+
+            rsa.FromXmlString("<RSAKeyValue><Modulus>moVJFocloDgvFV9VnMv+CwejSf3EHATBJoByze7qv39tmxSsNC/yiFc6VMut6ofvAzq3ZgfK3jizpt4TTNkJNhvhypXgK3fQDrABqBRC/jFtpxHOek/inn0uSxeXwnkNFvFAQFqNPdW7+ny3hzgM/VIGsKzjA4p5AFyFHsOfMccrXy3XoN3KNDWYT2uWHTS3NE/95eK/mmSCKTJRWJUGGtPIfD/EAGmSwuTl0hYjfkXDJRsiei7dZuIKO7Z3eJgp4l2czkH9l1/J1dLkpZuLVQ+Kwp7/z09JTLPHgUR+C6uDgVAmi5V4+KlQ20n0IIPAeb3273omJGEHAzaFWSZtDQ==</Modulus><Exponent>AQAB</Exponent><P>zGMtMszGXqLk1xcAwkFsv8xanbnPxn7j+z0+iTxSRZFGSDBWgxEPVp62hoBss6G8uQuU6JybFEozJfabUSMlhzaFYW4RHmWcbvdyq7JJxgL7+VNc7rwqVlmTMaD5yRHmIGGhTXJA2rQMKUq4Sx6PbNzHjd6A3kIRgpRUTFp0KUM=</P><Q>wYpsZ/2GFzU/MXj4jy9T73DB0mQ7IqHg7vziS6fDys2nP4t66xZLaS5c+II++o/c8EKcjpuRrBliG6hH3zcbIW4BXSfP/CQomJncDYd1N6WWyQ1wSEiOoG2akFBxLe3m8WcJowBOOi8R7DmVEMuZkMNmc7QnAk6M/TEIBBBUQ28=</Q><DP>gODkxkyjpVcX750cqGEy3rpQRXa+Uo7+2RSkU0sLIbzaUXjRhHIEdv07YRKn+Jk69IAeFJNzolara/vVslL0Pg+eCXKrLryp6Lr1vth8dnS5SF1Nk2hpVevDyh6UgzpbHv4RBVHPHVk89eiczxllHSMWXhn4rq2AdxNrGH5NExs=</DP><DQ>wI6sVLpUkvqTKPGmuy7nX67b6Ct4+nf8h0prC8KadkguQnbPkN3ZoYhTT5ymdDx2IUTk5q25PXTzu3iuKVN2VshP6xMVR1PiYBGUcpF2+ipx3w7Ty9cEsHDb+wFN2dh8kWlmmRpQumridhjESrWG0BTY9f0jYpQsiiwiQYjNjVk=</DQ><InverseQ>SFitART149om84YTnkZKhynRY/xregNPs29mzXO9lTWH4lo1w4NUAXoarIccFekt0h7yXTMgWYDpBsOvJmMaWAtHBwM3UJdlDWKRnmPN2iSqNyjoAv6Nd5LF0VlDQhDb1Y6Q85YeGyCI1qhWHmBxlsudOk++0vrcKr1DZ2KadTc=</InverseQ><D>luC+VPjxjFhP4RaNieTF0g9LKdxXuOQLlYSmlN5M6V+LrnmpC+wlbWt+0X1v/ClvAEA9A6toM0Q6Zx1AyzDBBcyD1EQz9z2uMik59NyT7ZBl+VQxwMxwA0FICpqm3IVGerhmfG/uqgog2p0ctzPLuy50yd6Ga9ax/+BXO4rXzsmeymBsZzbQoHWlXtI8rAdAH+h+8DuYeHmU6SKx2y5801Qotb0GpkMLSmuFb9ILZypEsMzJJFLb8XTwDfFe6AmZcMB1i6dPDOGn/y7vFwrsaxgMsTceUHIncalDlQpaCwTRFfJ7uEO9RiwFbRKHrctBpx4h/thyh6zSUVrXhEjVIQ==</D></RSAKeyValue>");
+
+            byte[] signedData = rsa.SignData(dataSign, "SHA256");
+            signature = Convert.ToBase64String(signedData);
+
+            var result2 = Newtonsoft.Json.JsonConvert.SerializeObject(new RawResponse
+            {
+                LicenseKey = Convert.ToBase64String(dataSign),
+                Signature = signature,
+                Message = "",
+                Result = ResultType.Success
+            });
+
+            ReturnResponse(result2, context);
+        }
 
         public static bool LoadLicenseFromPath(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string path, Action<string> updates)
         {
