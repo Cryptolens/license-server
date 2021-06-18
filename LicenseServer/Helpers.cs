@@ -471,7 +471,7 @@ namespace LicenseServer
 
                 if (key.SignMethod == 0)
                 {
-                    result.LicenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(fileContent);
+                    result.LicenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<KeyInfoResult>(fileContent).LicenseKey;
                     result.SignDate = result.LicenseKey.SignDate;
                 }
                 else
