@@ -45,16 +45,16 @@ namespace LicenseServer
 
             if (floatingTimeInterval > 0 && localFloatingServer)
             {
-                //if(signMethod == 0)
-                //{
-                //    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: SignMethod=1 is needed to use floating licensing offline." });
-                //    ReturnResponse(error, context);
-                //    return $"SignMethod was not set to 1 for '{licenseKey}', which is needed to continue with the floating activation.";
-                //}
+                if (signMethod == 0)
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: SignMethod=1 is needed to use floating licensing offline." });
+                    ReturnResponse(error, context);
+                    return $"SignMethod was not set to 1 for '{licenseKey}', which is needed to continue with the floating activation.";
+                }
 
                 //floating license
 
-                if(!licenseCache.TryGetValue(key, out result) && !licenseCache.TryGetValue(keyAlt, out result))
+                if (!licenseCache.TryGetValue(key, out result) && !licenseCache.TryGetValue(keyAlt, out result))
                 {
                     var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the license file (floating license)." });
                     ReturnResponse(error, context);
@@ -63,7 +63,15 @@ namespace LicenseServer
 
                 if(result.LicenseKey.MaxNoOfMachines > 0)
                 {
-                    if (activatedMachinesFloating[key].Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    var activationData = new ConcurrentBag<ActivationData>();
+                    activatedMachinesFloating.TryGetValue(key, out activationData);
+
+                    if(activationData == null)
+                    {
+                        activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentBag<ActivationData>(), (x, y) => y);
+                    }
+
+                    if (activationData.Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
                     {
                         var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
                                                       .OrderBy(x => x.Time).First();
