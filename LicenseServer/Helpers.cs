@@ -17,7 +17,7 @@ namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentBag<ActivationData>> activatedMachinesFloating)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -63,38 +63,70 @@ namespace LicenseServer
 
                 if(result.LicenseKey.MaxNoOfMachines > 0)
                 {
-                    var activationData = new ConcurrentBag<ActivationData>();
+                    var activationData = new ConcurrentDictionary<string, ActivationData>();
                     activatedMachinesFloating.TryGetValue(key, out activationData);
 
                     if(activationData == null)
                     {
-                        activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentBag<ActivationData>(), (x, y) => y);
+                        activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentDictionary<string, ActivationData>(), (x, y) => y);
                     }
 
-                    if (activationData.Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    var activation = new ActivationData();
+
+                    activationData.TryGetValue(machineCode, out activation);
+
+                    if(activation != null && activation.FloatingExpires >  DateTime.UtcNow)
                     {
-                        var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
-                                                      .OrderBy(x => x.Time).First();
                         activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+                        FloatingResult(result, activation, machineCode, context);
+                        return $"Floating license {licenseKey} returned successfully.";
+                    }
+                    else if(activationData.Count(x=> x.Value.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    {
+                        activation = activationData.AddOrUpdate(machineCode, x=> new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) }, (x,y) => new ActivationData { Mid = machineCode, Time = y.Time, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
 
                         FloatingResult(result, activation, machineCode, context);
- 
                         return $"Floating license {licenseKey} returned successfully.";
                     }
-                    else if (activatedMachinesFloating[key].Count(x => x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    else
                     {
-                        //activatedMachinesFloating.AddOrUpdate
-
-                        activatedMachinesFloating[key].Add(new ActivationData { Mid = machineCode, Time = DateTime.UtcNow,  FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
-
-
-                        //FloatingResult(result, activation, machineCode, context);
-
-                        return $"Floating license {licenseKey} returned successfully.";
+                        var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Cannot activate the new device as the limit has been reached." });
+                        ReturnResponse(error, context);
+                        return $"The limit of the number of concurrent devices for '{licenseKey}' was reached. Activation failed.";
                     }
+
+
+                    //if (activationData.Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    //{
+                    //    // maybe put this into concurrent dict instead.
+                    //    var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
+                    //                                  .OrderBy(x => x.Time).First();
+                    //    activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+
+                    //    FloatingResult(result, activation, machineCode, context);
+ 
+                    //    return $"Floating license {licenseKey} returned successfully.";
+                    //}
+                    //else if (activatedMachinesFloating[key].Count(x => x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    //{
+                    //    //activatedMachinesFloating.AddOrUpdate
+
+                    //    activationData.Add(new ActivationData { Mid = machineCode, Time = DateTime.UtcNow,  FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
+
+
+                    //    //FloatingResult(result, activation, machineCode, context);
+
+                    //    return $"Floating license {licenseKey} returned successfully.";
+                    //}
 
 
                     // return new license
+                }
+                else
+                {
+                    var activation = new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) };
+                    FloatingResult(result, activation, machineCode, context);
+                    return $"Floating license {licenseKey} returned successfully.";
                 }
 
                 return null;
