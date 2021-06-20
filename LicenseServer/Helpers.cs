@@ -1,4 +1,10 @@
-﻿using System;
+﻿/**
+ * Copyright (c) 2019 - 2021 Cryptolens AB
+ * To use the license server, a separate subscription is needed. 
+ * Pricing information can be found on the following page: https://cryptolens.io/products/license-server/
+ * */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -481,13 +487,20 @@ namespace LicenseServer
                     result.SignDate = result.LicenseKey.SignDate;
                 }
 
+
+                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey).IsValid())
+                {
+                    updates($"The file '{file}' was not loaded from the cache. The signature check failed.");
+                    continue;
+                }
+
                 if (licenseCache.ContainsKey(key))
                 {
                     if(licenseCache[key].SignDate < result.SignDate)
                     {
                         filecount++;
                         licenseCache[key] = result;
-                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overriden.");
+                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overridden.");
                     }
                     else
                     {
