@@ -26,146 +26,89 @@ namespace LicenseServer
     class Program
     {
         static HttpListener httpListener = new HttpListener();
-
         public static int port = 8080;
-
         public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
-
         public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
-
         public static ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating = new ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>>();
-
         public static int cacheLength = 0;
-
         public static bool attemptToRefresh = true;
-
         public static bool localFloatingServer = true;
+        public static string RSAServerKey = "";
+        public static string RSAPublicKey = "";
 
-        public static string RSAServerKey = "<RSAKeyValue><Modulus>6cIjYDBBF242/96k+CVC//SmSOZPjcxYlE56eQwKURx23h3IMS+8yLPOYaowiiR4tFE5IQ534NoympggJrOp6L9pAl7l7K8QqydrX3VPRvMRvyFx7g4dLKKfG9m+ntWFD1Ptomrrou5+bJPLQpolpQpaJXtFOGVWUObiez5L0lU=</Modulus><Exponent>AQAB</Exponent><P>+joWQSb727+AkTZlO+aMoQSvFK62zK8AuDfyWjwWRhQRfnw9W6m/vYHfb7virzAwrNFS9cC01COe5c4J+c2qXw==</P><Q>7ybIf44xHlVtZffBM+r3PAJlQOuiJQ3YJ4ZnWvInW7zRm1n7FbQGhDHGTPBOCtT0f6OekEbhVWyK4hA28sbnyw==</Q><DP>ohQR6i2oIZSPYH/NXtlc6ccw6MKqYTZRzwFeF5ioDMhe9IDg9YikS8ndwm/+yt76CFal18z01Bwmhk/JImdXHQ==</DP><DQ>W+Nd9EzRKKOQRjacwHMOjbsp5njjMzOPkxg8TCBw6Pmy2+sF43/pZQ+u7s8CXX0XeJeIjEz/tY/gCR5LzpqIYw==</DQ><InverseQ>0ITyB1cAxDjB1f9ZmwDAFCJaVt/AR77iGrq6NR51A21aROZ9620+h6xdkO6NC8Z8iWU3zyO3WZoyduB/BmRI6Q==</InverseQ><D>G8e3JYzGh47RGXpvt4/SFRIRmvNH/A2Pb1yeQHl2VmpgFAiNDI9kS6PWwJOVvi0UbTWD6RJLm9zCi83NcFwEsoq4H+eCWp4bFsI/XGHzLraVYPPltHJRXlL4HAp1YB/hZyomMzF1swaT+KqDJkAxDJEl1pVsFDYvV+HfQkEI2qc=</D></RSAKeyValue>";
 
-        public static string RSAPublicKey = "<RSAKeyValue><Modulus>wflqVfb+6gkb1lHr1fysux8o+oJREy0M2hM3yEKh92w5rXoc673ZRI9JTg725IqHvr/031TMqFAMvfdQ8X5gB0L3gb3E1tY/QvpZxwobRs6Xpz3XxuGhZ7cIhO9uWLZuykSvoD+PQZMOsdp+M05p9KS4eTsbuSo1w0kwkp6AnumMiG7ICOxYsdGg7YlzX5DN3m6QgG9Fg+6faIOLyBxXktBK4+ligCMNYdRLd3z9UqhGGy4u/Hnz3VD2bzJ99JWQYx00HtXyojmUHi25Yk2G5eki3sQXM7gYzWkZOzaEQ5/rMghp0O3/eJblWtranxQv4HBCm/b8l4oVh4GTcN0x7w==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+        public static string ConfigurationFromCryptolens = "ksUFTJgAzQFtw8DD2gGfPFJTQUtleVZhbHVlPjxNb2R1bHVzPndmbHFWZmIrNmdrYjFsSHIxZnlzdXg4bytvSlJFeTBNMmhNM3lFS2g5Mnc1clhvYzY3M1pSSTlKVGc3MjVJcUh2ci8wMzFUTXFGQU12ZmRROFg1Z0IwTDNnYjNFMXRZL1F2cFp4d29iUnM2WHB6M1h4dUdoWjdjSWhPOXVXTFp1eWtTdm9EK1BRWk1Pc2RwK00wNXA5S1M0ZVRzYnVTbzF3MGt3a3A2QW51bU1pRzdJQ094WXNkR2c3WWx6WDVETjNtNlFnRzlGZys2ZmFJT0x5QnhYa3RCSzQrbGlnQ01OWWRSTGQzejlVcWhHR3k0dS9IbnozVkQyYnpKOTlKV1FZeDAwSHRYeW9qbVVIaTI1WWsyRzVla2kzc1FYTTdnWXpXa1pPemFFUTUvck1naHAwTzMvZUpibFd0cmFueFF2NEhCQ20vYjhsNG9WaDRHVGNOMHg3dz09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPtoDkzxSU0FLZXlWYWx1ZT48TW9kdWx1cz5sY3RkYzZqdENGWXJGb3VNZk01c20vWkkyV2gzVy9mSDkwZnJ6bVc1Smxaek9UZkYwcTNGYnkvZ2lMdEhBenpiVHp5eFZwWm5GVGtjczEzRWY0Q3RmdlUzMXVSRTF0WUtrZ05WM29BdENab3p1bEhuWHBKYTczc0cvRDVlYjRlZ3hqRXZZU2JFSVZGTFZub21EYktoQ2VNdHFxS08xeE9ySjc4WDBUb3BVTjg9PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD54S0g0Y0tveTdaemd2ODVEYTczbllnQzJ1RGoxUm1NcTFEbzEyVzlaZ0ZkTXlaYmxrVW9QakNJRWRPUGc0T1IxMWpDUlV2Q28vbU1kRXh3QnRZMlIwUT09PC9QPjxRPnd3VXhpSzhWcTVkaDdNRFk5KzVlMUUwdUd2QnZ3aWl5UlhsVGdLeHhiQWkrdGQzQlBQY05venFRMFlBenhVSS9ZVGhzaEtwc05yaGFENTUzZEhZenJ3PT08L1E+PERQPnBZRVhWZTFMOUlnSS9DaW13dmNTM0lCeFMxcFZ5S3NMajVwM1hNN0diS29PYmRkZTN3MlJUSWdOYkQycU9HRFRkamRtK29LcUc0UmRJb3ArUGN3dElRPT08L0RQPjxEUT51clRES24rcytIMVMxQTRBNnNSOFp6YUkyR091S3kwNUYwaERpR0lQcUlWcXg4VEpGdXZUVTUxalBoOUY4U2t1Y281SlhtMm1jbkRtVUNPL2EzRXFvdz09PC9EUT48SW52ZXJzZVE+V2hzQXROQzNITkhuYUFyczdwQ1JDWVUrSE0yL1Y4eHpaTncvVER0c1JLYWVDVWsyUmp3TXZObnNUNVROdHZtM2JqYithaFpDeFFrSjQycFpvMjhidEE9PTwvSW52ZXJzZVE+PEQ+SEVkMjNwRjdJbEpHTXl6b09sMnNJbXVHQ0VsUkUxTTlkS0VtMHVIZ2FPejBOczZoTWF0dHRSWjRVTWZ1V1oyaEY1M3hLdFFkSk9RUjE0anh3bEowTGxSRGRtbXBTOEtQZ1EzMFd3d1BnUk80ZmF3K1NFQnNqOTlBNWxWU2dZbnYxKzhhdmZoY3o2aHFUeDRxMWc0MWdBdW5oeW1QaUQrd3A5cDFRdDFWZ1RFPTwvRD48L1JTQUtleVZhbHVlPpLX/yCb25BitHi2AMUBAJ925F62zWtlR27u7vN1HU3s4Nt2eGI8SmA++vPPsn89l9/lTvXxh2Zy/79chjncb3oVq57YrcXxsfHcgKPr4Vm/iFH1UPNKvwFH4yW8tos2UV+xSzGUMEk8vEy3i8nwrC/EdP2MVc7Qwv9/O13OM7jwKTtJtU9qHff/P0mKiGcHa42bfwqEK9oOvVlilLqZwHhXby5hR5KREKmmhr3/N2qWt5KAkqZds/GJrIn7JyJGWgNdTqNppNZnW7vJc4BSOVfam5YDIaOLhtN3S4nl3FCdLOJo2l0JP8p5aZUaefcT1Ae2OBchOdj4VoQIvv+rPFcApES1HW+oUCsqUwoUsfI=";
 
 
         static void Main(string[] args)
         {
             Console.WriteLine("Cryptolens License Server v2.1\n");
 
-            try
+            if (!string.IsNullOrEmpty(ConfigurationFromCryptolens))
             {
-                var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));
+                var config = Helpers.ReadConfiguration(ConfigurationFromCryptolens);
 
-                WriteMessage("Loading settings from config.json.");
-
-                if (config != null)
+                if(config == null)
                 {
-                    cacheLength = config.CacheLength;
-                    WriteMessage($"Cache length set to {cacheLength}");
-                    port = config.Port;
-                    WriteMessage($"Port set to {port}");
-                    attemptToRefresh = !config.OfflineMode;
-                    WriteMessage($"Offline mode is set to {!attemptToRefresh}");
+                    WriteMessage($"Configuration data could not be read.");
+                    return;
+                }
 
-                    localFloatingServer = config.LocalFloatingServer;
-                    WriteMessage($"Local floating license server is set to {localFloatingServer}");
+                cacheLength = config.CacheLength;
+                WriteMessage($"Cache length set to {cacheLength}");
+                port = config.Port;
+                WriteMessage($"Port set to {port}");
+                attemptToRefresh = !config.OfflineMode;
+                WriteMessage($"Offline mode is set to {!attemptToRefresh}");
+                localFloatingServer = config.LocalFloatingServer;
+                WriteMessage($"Local floating license server is set to {localFloatingServer}");
 
-                    foreach (var file in config.ActivationFiles)
-                    {
-                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
-                        WriteMessage($"Path '{file}' {result}");
-                    }
+                RSAServerKey = config.ServerKey;
+                RSAPublicKey = config.RSAPublicKey;
+
+                foreach (var file in config.ActivationFiles)
+                {
+                    string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                    WriteMessage($"Path '{file}' {result}");
                 }
             }
-            catch (Exception ex3)
+            else
             {
-                if (args.Length == 4)
+
+                try
                 {
-                    port = Convert.ToInt32(args[0]);
-                    cacheLength = Convert.ToInt32(args[1]);
-                    attemptToRefresh = args[2] == "work-offline" ? false : true;
+                    var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));
 
-                    var paths = args[3].Split(';');
+                    WriteMessage("Loading settings from config.json.");
 
-                    foreach (var path in paths)
+                    if (config != null)
                     {
-                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
-                        WriteMessage($"Path '{path}' {result}");
-                    }
-                }
-                if (args.Length == 3)
-                {
-                    port = Convert.ToInt32(args[0]);
-                    cacheLength = Convert.ToInt32(args[1]);
-                    attemptToRefresh = args[2] == "work-offline" ? false : true;
-                }
-                else if (args.Length == 2)
-                {
-                    port = Convert.ToInt32(args[0]);
-                    cacheLength = Convert.ToInt32(args[1]);
-                }
-                else if (args.Length == 1)
-                {
-                    port = Convert.ToInt32(args[0]);
-                }
-                else
-                {
-                    Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
+                        cacheLength = config.CacheLength;
+                        WriteMessage($"Cache length set to {cacheLength}");
+                        port = config.Port;
+                        WriteMessage($"Port set to {port}");
+                        attemptToRefresh = !config.OfflineMode;
+                        WriteMessage($"Offline mode is set to {!attemptToRefresh}");
 
-                    try
-                    {
-                        var portString = Console.ReadLine();
+                        localFloatingServer = config.LocalFloatingServer;
+                        WriteMessage($"Local floating license server is set to {localFloatingServer}");
 
-                        if (!string.IsNullOrWhiteSpace(portString))
+                        foreach (var file in config.ActivationFiles)
                         {
-                            port = Convert.ToInt32(portString);
+                            string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                            WriteMessage($"Path '{file}' {result}");
                         }
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex3)
+                {
+                    if (args.Length == 4)
                     {
-                        WriteMessage("The port was incorrect.");
-                        Console.ReadLine();
-                        return;
-                    }
+                        port = Convert.ToInt32(args[0]);
+                        cacheLength = Convert.ToInt32(args[1]);
+                        attemptToRefresh = args[2] == "work-offline" ? false : true;
 
-                    Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
-
-                    try
-                    {
-                        var cacheLengthString = Console.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(cacheLengthString))
-                        {
-                            cacheLength = Convert.ToInt32(cacheLengthString);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteMessage("The cache value could not be parsed. The default value will be used.");
-                        Console.ReadLine();
-                        return;
-                    }
-
-                    if (cacheLength > 0)
-                    {
-                        Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
-
-                        if (Console.ReadLine() == "y")
-                        {
-                            attemptToRefresh = false;
-                        }
-                    }
-
-                    Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
-                        "applications on your network can access it. If you have multiple license files, they can either be separated with a semi-colon ';' or by specifying the folder (by default, no files will be loaded):");
-
-                    var licenseFilePaths = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(licenseFilePaths))
-                    {
-                        WriteMessage("No license files were provided.");
-                    }
-                    else
-                    {
-                        var paths = licenseFilePaths.Split(';');
+                        var paths = args[3].Split(';');
 
                         foreach (var path in paths)
                         {
@@ -173,7 +116,90 @@ namespace LicenseServer
                             WriteMessage($"Path '{path}' {result}");
                         }
                     }
+                    if (args.Length == 3)
+                    {
+                        port = Convert.ToInt32(args[0]);
+                        cacheLength = Convert.ToInt32(args[1]);
+                        attemptToRefresh = args[2] == "work-offline" ? false : true;
+                    }
+                    else if (args.Length == 2)
+                    {
+                        port = Convert.ToInt32(args[0]);
+                        cacheLength = Convert.ToInt32(args[1]);
+                    }
+                    else if (args.Length == 1)
+                    {
+                        port = Convert.ToInt32(args[0]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nPlease enter the port on which the server will run (default is 8080):");
 
+                        try
+                        {
+                            var portString = Console.ReadLine();
+
+                            if (!string.IsNullOrWhiteSpace(portString))
+                            {
+                                port = Convert.ToInt32(portString);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteMessage("The port was incorrect.");
+                            Console.ReadLine();
+                            return;
+                        }
+
+                        Console.WriteLine("\nWould you like to enable caching of license files? If yes, please specify how often a license file should be updated. If you are not sure, keep the default value (default is 0):");
+
+                        try
+                        {
+                            var cacheLengthString = Console.ReadLine();
+
+                            if (!string.IsNullOrWhiteSpace(cacheLengthString))
+                            {
+                                cacheLength = Convert.ToInt32(cacheLengthString);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteMessage("The cache value could not be parsed. The default value will be used.");
+                            Console.ReadLine();
+                            return;
+                        }
+
+                        if (cacheLength > 0)
+                        {
+                            Console.WriteLine("\nWould you like the server to work offline? If yes, the server will always try to use cache before contacting Cryptolens [y/N] (default is N):");
+
+                            if (Console.ReadLine() == "y")
+                            {
+                                attemptToRefresh = false;
+                            }
+                        }
+
+                        Console.WriteLine("\nIf you have received a license file from your vendor, you can load it into the license server so that other " +
+                            "applications on your network can access it. If you have multiple license files, they can either be separated with a semi-colon ';' or by specifying the folder (by default, no files will be loaded):");
+
+                        var licenseFilePaths = Console.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(licenseFilePaths))
+                        {
+                            WriteMessage("No license files were provided.");
+                        }
+                        else
+                        {
+                            var paths = licenseFilePaths.Split(';');
+
+                            foreach (var path in paths)
+                            {
+                                string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, path, WriteMessage) ? "Processed" : "Error";
+                                WriteMessage($"Path '{path}' {result}");
+                            }
+                        }
+
+                    }
                 }
             }
 

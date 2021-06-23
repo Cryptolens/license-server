@@ -19,6 +19,8 @@ using SKM.V3.Models;
 using System.Collections.Concurrent;
 using System.Web;
 
+using MessagePack;
+
 namespace LicenseServer
 {
     public class Helpers
@@ -488,9 +490,9 @@ namespace LicenseServer
                 }
 
 
-                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey).IsValid())
+                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey, Program.cacheLength).IsValid())
                 {
-                    updates($"The file '{file}' was not loaded from the cache. The signature check failed.");
+                    updates($"The file '{file}' was not loaded from the cache. The signature check failed or the file is too old.");
                     continue;
                 }
 
@@ -524,6 +526,41 @@ namespace LicenseServer
             var epoch = time - new DateTime(1970, 1, 1, 0, 0, 0);
 
             return (long)epoch.TotalSeconds;
+        }
+
+        public static LicenseServerConfiguration ReadConfiguration(string config, string existingRSAPublicKey = null)
+        {
+            try
+            {
+                var serializedData = MessagePackSerializer.Deserialize<SerializedLSC>(Convert.FromBase64String(config));
+
+                var extractedConfig = MessagePackSerializer.Deserialize<LicenseServerConfiguration>(serializedData.LSC);
+
+                using (var rsa = new System.Security.Cryptography.RSACryptoServiceProvider(2048))
+                {
+                    if (existingRSAPublicKey != null)
+                    {
+                        rsa.FromXmlString(existingRSAPublicKey);
+                    }
+                    else
+                    {
+                        rsa.FromXmlString(extractedConfig.RSAPublicKey);
+                    }
+
+                    if (rsa.VerifyData(serializedData.LSC, serializedData.Signature, System.Security.Cryptography.HashAlgorithmName.SHA256, System.Security.Cryptography.RSASignaturePadding.Pkcs1))
+                    {
+                        // ok
+                        return extractedConfig;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch(Exception ex) { return null; }
+
+            return null;
         }
     }
 
