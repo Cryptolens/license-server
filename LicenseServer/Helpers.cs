@@ -299,14 +299,25 @@ namespace LicenseServer
 
                     foreach (var file in files)
                     {
-                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
+                        string errorMessage;
+                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file, out errorMessage) ? "OK" : "Error";
                         updates($"File '{path}' {result}.");
+                        if(errorMessage != null)
+                        {
+                            updates(errorMessage);
+                        }
                     }
                 }
                 else
                 {
-                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
+                    string errorMessage;
+                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path, out errorMessage) ? "OK" : "Error";
                     updates($"File '{path}' {result}.");
+
+                    if (errorMessage != null)
+                    {
+                        updates(errorMessage);
+                    }
                 }
             }
             catch(Exception ex) { return false; }
@@ -314,8 +325,10 @@ namespace LicenseServer
             return true;
         }
 
-        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile)
+        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile, out string errorMessage)
         {
+            errorMessage = null;
+
             try
             {
                 var file = System.IO.File.ReadAllText(pathToFile);
@@ -360,13 +373,18 @@ namespace LicenseServer
 
                 }
 
-                if(licenseCache.ContainsKey(key))
+                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey, Program.cacheLength).IsValid())
+                {
+                    errorMessage = $"The file '{pathToFile}' was not loaded from the cache. The signature check failed.";
+                    return false; 
+                }
+
+                if (licenseCache.ContainsKey(key))
                 {
                     if(licenseCache[key].SignDate < result.SignDate)
                     {
                         licenseCache[key] = result;
                         keysToUpdate[key] = result.Response;
-
                     }
                 }
                 else
