@@ -77,6 +77,27 @@ If you want to load a specific list of files and folders, they can be separated 
 C:\> LicenseServer.exe 8080 10 work-offline "C:\Users\User Name\Downloads";"C:\temp\file.skm"
 ```
 
+##### Floating licenses offline
+If you want to use [floating licensing](https://help.cryptolens.io/licensing-models/floating) in offline mode (for example, to restrict the maximum number of containers a user can start), it can be done as follows:
+
+1. Visit [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver) and copy the "License server configuration" and "RSA Public Key".
+2. When verifying the signature inside your application, please use the RSA Public Key on this page instead of the one you would normally use when your application can access our API. This key will only work with the license server that uses the configuration above.
+3. In the license server project, paste the value of "license server configuration" to `ConfigurationFromCryptolens` variable in `Program.cs`.
+4. Compile the license server in release mode.
+5. In the release folder, create a new folder called "licensefiles".
+6. Visit the [product page](https://app.cryptolens.io/Product) and click on the yellow button next to the license key that belongs to your client (to manage all activations). Now, click on "Download activation file" and put this file into the "licensefiles" folder created earlier.
+7. You can now send the license server (in the release folder, including all the files and folders) to your client.
+
+> **Note (for .NET users)** For the time being, `Key.Activate` needs to be called the same way as the in the Unity example: https://help.cryptolens.io/getting-started/unity
+
+```cs
+// call to activate
+var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-GCMVD", machineCode: "foo");
+
+// obtaining the license key (and verifying the signature automatically).
+var license = LicenseKey.FromResponse("RSAPubKey", result);
+```
+
 ### Loading settings from a config file
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 

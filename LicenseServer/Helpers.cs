@@ -1,4 +1,10 @@
-﻿using System;
+﻿/**
+ * Copyright (c) 2019 - 2021 Cryptolens AB
+ * To use the license server, a separate subscription is needed. 
+ * Pricing information can be found on the following page: https://cryptolens.io/products/license-server/
+ * */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,11 +19,13 @@ using SKM.V3.Models;
 using System.Collections.Concurrent;
 using System.Web;
 
+using MessagePack;
+
 namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -26,14 +34,120 @@ namespace LicenseServer
             int.TryParse(nvc.Get("ProductId"), out productId);
             int signMethod = -1;
             int.TryParse(nvc.Get("SignMethod"), out signMethod);
+
+            if(nvc.Get("SignMethod") == "StringSign")
+            {
+                signMethod = 1;
+            }
+
             var licenseKey = nvc.Get("Key");
             var machineCode = nvc.Get("MachineCode");
+            int floatingTimeInterval = -1;
+            int.TryParse(nvc.Get("FloatingTimeInterval"), out floatingTimeInterval);
 
             LAResult result = null;
 
             var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = signMethod };
-            
-            if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
+
+            var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = Math.Abs(signMethod-1) };
+
+            if (floatingTimeInterval > 0 && localFloatingServer)
+            {
+                if (signMethod == 0)
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: SignMethod=1 is needed to use floating licensing offline." });
+                    ReturnResponse(error, context);
+                    return $"SignMethod was not set to 1 for '{licenseKey}', which is needed to continue with the floating activation.";
+                }
+
+                if(Program.ConfigurationExpires != null && Program.ConfigurationExpires < DateTimeOffset.UtcNow)
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: The configuration has expired. Please contact the vendor to receive a new version of the license server to continue to use floating licenses offline." });
+                    ReturnResponse(error, context);
+                    return $"The configuration has expired. Please contact the vendor to receive a new version of the license server to continue to use floating licenses offline.";
+                }
+
+                //floating license
+
+                if (!licenseCache.TryGetValue(key, out result) && !licenseCache.TryGetValue(keyAlt, out result))
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the license file (floating license)." });
+                    ReturnResponse(error, context);
+                    return $"Could not find the license file for '{licenseKey}' to continue with the floating activation.";
+                }
+
+                if(result.LicenseKey.MaxNoOfMachines > 0)
+                {
+                    var activationData = new ConcurrentDictionary<string, ActivationData>();
+                    activatedMachinesFloating.TryGetValue(key, out activationData);
+
+                    if(activationData == null)
+                    {
+                        activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentDictionary<string, ActivationData>(), (x, y) => y);
+                    }
+
+                    var activation = new ActivationData();
+
+                    activationData.TryGetValue(machineCode, out activation);
+
+                    if(activation != null && activation.FloatingExpires >  DateTime.UtcNow)
+                    {
+                        activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+                        FloatingResult(result, activation, machineCode, context);
+                        return $"Floating license {licenseKey} returned successfully.";
+                    }
+                    else if(activationData.Count(x=> x.Value.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    {
+                        activation = activationData.AddOrUpdate(machineCode, x=> new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) }, (x,y) => new ActivationData { Mid = machineCode, Time = y.Time, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
+
+                        FloatingResult(result, activation, machineCode, context);
+                        return $"Floating license {licenseKey} returned successfully.";
+                    }
+                    else
+                    {
+                        var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Cannot activate the new device as the limit has been reached." });
+                        ReturnResponse(error, context);
+                        return $"The limit of the number of concurrent devices for '{licenseKey}' was reached. Activation failed.";
+                    }
+
+
+                    //if (activationData.Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
+                    //{
+                    //    // maybe put this into concurrent dict instead.
+                    //    var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
+                    //                                  .OrderBy(x => x.Time).First();
+                    //    activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+
+                    //    FloatingResult(result, activation, machineCode, context);
+ 
+                    //    return $"Floating license {licenseKey} returned successfully.";
+                    //}
+                    //else if (activatedMachinesFloating[key].Count(x => x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
+                    //{
+                    //    //activatedMachinesFloating.AddOrUpdate
+
+                    //    activationData.Add(new ActivationData { Mid = machineCode, Time = DateTime.UtcNow,  FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
+
+
+                    //    //FloatingResult(result, activation, machineCode, context);
+
+                    //    return $"Floating license {licenseKey} returned successfully.";
+                    //}
+
+
+                    // return new license
+                }
+                else
+                {
+                    var activation = new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) };
+                    FloatingResult(result, activation, machineCode, context);
+                    return $"Floating license {licenseKey} returned successfully.";
+                }
+
+                return null;
+
+            }
+            else if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
                 if (ts.Days >= cacheLength || attemptToRefresh)
@@ -114,7 +228,73 @@ namespace LicenseServer
             }
         }
 
+        public static void FloatingResult(LAResult result, ActivationData activation, string machineCode, HttpListenerContext context, int signmetod = 1)
+        {
+            if (signmetod == 1)
+            {
+                var licenseKeyToReturn = new LicenseKeyPI { };
 
+                licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time =
+                          ToUnixTimestamp(activation.Time.Value)} };
+                licenseKeyToReturn.Block = result.LicenseKey.Block;
+                licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
+                licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
+
+                if (licenseKeyToReturn != null)
+                {
+                    licenseKeyToReturn.Customer = new CustomerPI { CompanyName = result.LicenseKey.Customer.CompanyName, Created = ToUnixTimestamp(result.LicenseKey.Customer.Created), Email = result.LicenseKey.Customer.Email, Id = result.LicenseKey.Customer.Id, Name = result.LicenseKey.Customer.Name };
+                }
+
+                licenseKeyToReturn.DataObjects = result.LicenseKey.DataObjects;
+                licenseKeyToReturn.F1 = result.LicenseKey.F1;
+                licenseKeyToReturn.F2 = result.LicenseKey.F2;
+                licenseKeyToReturn.F3 = result.LicenseKey.F3;
+                licenseKeyToReturn.F4 = result.LicenseKey.F4;
+                licenseKeyToReturn.F5 = result.LicenseKey.F5;
+                licenseKeyToReturn.F6 = result.LicenseKey.F6;
+                licenseKeyToReturn.F7 = result.LicenseKey.F7;
+                licenseKeyToReturn.F8 = result.LicenseKey.F8;
+
+                licenseKeyToReturn.GlobalId = result.LicenseKey.GlobalId;
+                licenseKeyToReturn.MaxNoOfMachines = result.LicenseKey.MaxNoOfMachines;
+                licenseKeyToReturn.ID = result.LicenseKey.ID;
+                licenseKeyToReturn.Key = result.LicenseKey.Key;
+
+                licenseKeyToReturn.Notes = result.LicenseKey.Notes;
+                licenseKeyToReturn.Period = result.LicenseKey.Period;
+                licenseKeyToReturn.TrialActivation = result.LicenseKey.TrialActivation;
+                licenseKeyToReturn.ProductId = result.LicenseKey.ProductId;
+                licenseKeyToReturn.SignDate = ToUnixTimestamp(DateTime.UtcNow);
+
+                var data = Newtonsoft.Json.JsonConvert.SerializeObject(licenseKeyToReturn);
+
+                var signature = "";
+
+                byte[] dataSign = System.Text.UTF8Encoding.UTF8.GetBytes(data);
+
+                System.Security.Cryptography.RSACryptoServiceProvider rsa = new System.Security.Cryptography.RSACryptoServiceProvider(2048);
+
+                rsa.FromXmlString(Program.RSAServerKey);
+
+                byte[] signedData = rsa.SignData(dataSign, "SHA256");
+                signature = Convert.ToBase64String(signedData);
+
+                var result2 = Newtonsoft.Json.JsonConvert.SerializeObject(new RawResponse
+                {
+                    LicenseKey = Convert.ToBase64String(dataSign),
+                    Signature = signature,
+                    Message = "",
+                    Result = ResultType.Success
+                });
+
+                ReturnResponse(result2, context);
+            }
+            else
+            {
+
+
+            }
+        }
 
         public static bool LoadLicenseFromPath(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string path, Action<string> updates)
         {
@@ -126,14 +306,25 @@ namespace LicenseServer
 
                     foreach (var file in files)
                     {
-                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file) ? "OK" : "Error";
+                        string errorMessage;
+                        string result = LoadLicenseFromFile(licenseCache, keysToUpdate, file, out errorMessage) ? "OK" : "Error";
                         updates($"File '{path}' {result}.");
+                        if(errorMessage != null)
+                        {
+                            updates(errorMessage);
+                        }
                     }
                 }
                 else
                 {
-                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path) ? "OK" : "Error";
+                    string errorMessage;
+                    string result = LoadLicenseFromFile(licenseCache, keysToUpdate, path, out errorMessage) ? "OK" : "Error";
                     updates($"File '{path}' {result}.");
+
+                    if (errorMessage != null)
+                    {
+                        updates(errorMessage);
+                    }
                 }
             }
             catch(Exception ex) { return false; }
@@ -141,8 +332,10 @@ namespace LicenseServer
             return true;
         }
 
-        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile)
+        public static bool LoadLicenseFromFile(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToFile, out string errorMessage)
         {
+            errorMessage = null;
+
             try
             {
                 var file = System.IO.File.ReadAllText(pathToFile);
@@ -187,13 +380,18 @@ namespace LicenseServer
 
                 }
 
-                if(licenseCache.ContainsKey(key))
+                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey, Program.cacheLength).IsValid())
+                {
+                    errorMessage = $"The file '{pathToFile}' was not loaded from the cache. The signature check failed.";
+                    return false; 
+                }
+
+                if (licenseCache.ContainsKey(key))
                 {
                     if(licenseCache[key].SignDate < result.SignDate)
                     {
                         licenseCache[key] = result;
                         keysToUpdate[key] = result.Response;
-
                     }
                 }
                 else
@@ -306,7 +504,7 @@ namespace LicenseServer
 
                 if (key.SignMethod == 0)
                 {
-                    result.LicenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<LicenseKey>(fileContent);
+                    result.LicenseKey = Newtonsoft.Json.JsonConvert.DeserializeObject<KeyInfoResult>(fileContent).LicenseKey;
                     result.SignDate = result.LicenseKey.SignDate;
                 }
                 else
@@ -316,13 +514,20 @@ namespace LicenseServer
                     result.SignDate = result.LicenseKey.SignDate;
                 }
 
+
+                if (!string.IsNullOrEmpty(Program.RSAPublicKey) && !result.LicenseKey.HasValidSignature(Program.RSAPublicKey, Program.cacheLength).IsValid())
+                {
+                    updates($"The file '{file}' was not loaded from the cache. The signature check failed or the file is too old.");
+                    continue;
+                }
+
                 if (licenseCache.ContainsKey(key))
                 {
                     if(licenseCache[key].SignDate < result.SignDate)
                     {
                         filecount++;
                         licenseCache[key] = result;
-                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overriden.");
+                        updates($"The cache was updated with '{file}'. The license was previously loaded from file was overridden.");
                     }
                     else
                     {
@@ -339,6 +544,48 @@ namespace LicenseServer
             }
 
             return $"Loaded {filecount}/{files.Count()} file(s) from cache.";
+        }
+
+        public static long ToUnixTimestamp(DateTime time)
+        {
+            var epoch = time - new DateTime(1970, 1, 1, 0, 0, 0);
+
+            return (long)epoch.TotalSeconds;
+        }
+
+        public static LicenseServerConfiguration ReadConfiguration(string config, string existingRSAPublicKey = null)
+        {
+            try
+            {
+                var serializedData = MessagePackSerializer.Deserialize<SerializedLSC>(Convert.FromBase64String(config));
+
+                var extractedConfig = MessagePackSerializer.Deserialize<LicenseServerConfiguration>(serializedData.LSC);
+
+                using (var rsa = new System.Security.Cryptography.RSACryptoServiceProvider(2048))
+                {
+                    if (existingRSAPublicKey != null)
+                    {
+                        rsa.FromXmlString(existingRSAPublicKey);
+                    }
+                    else
+                    {
+                        rsa.FromXmlString(extractedConfig.RSAPublicKey);
+                    }
+
+                    if (rsa.VerifyData(serializedData.LSC, serializedData.Signature, System.Security.Cryptography.HashAlgorithmName.SHA256, System.Security.Cryptography.RSASignaturePadding.Pkcs1))
+                    {
+                        // ok
+                        return extractedConfig;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch(Exception ex) { return null; }
+
+            return null;
         }
     }
 
