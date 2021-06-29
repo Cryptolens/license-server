@@ -60,6 +60,13 @@ namespace LicenseServer
                     return $"SignMethod was not set to 1 for '{licenseKey}', which is needed to continue with the floating activation.";
                 }
 
+                if(Program.ConfigurationExpires != null && Program.ConfigurationExpires < DateTimeOffset.UtcNow)
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: The configuration has expired. Please contact the vendor to receive a new version of the license server to continue to use floating licenses offline." });
+                    ReturnResponse(error, context);
+                    return $"The configuration has expired. Please contact the vendor to receive a new version of the license server to continue to use floating licenses offline.";
+                }
+
                 //floating license
 
                 if (!licenseCache.TryGetValue(key, out result) && !licenseCache.TryGetValue(keyAlt, out result))

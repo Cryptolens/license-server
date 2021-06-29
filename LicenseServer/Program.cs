@@ -36,6 +36,7 @@ namespace LicenseServer
         public static string RSAServerKey = "";
         public static string RSAPublicKey = "";
 
+        public static DateTimeOffset? ConfigurationExpires = null;
 
         // A configuration can be generated on https://app.cryptolens.io/extensions/licenseserver
         // More instructions can be found here: https://github.com/Cryptolens/license-server/#floating-licenses-offline
@@ -44,7 +45,7 @@ namespace LicenseServer
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v2.1\n");
+            Console.WriteLine("Cryptolens License Server v2.2\n");
 
             if (!string.IsNullOrEmpty(ConfigurationFromCryptolens))
             {
@@ -79,6 +80,8 @@ namespace LicenseServer
                     string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
                     WriteMessage($"Path '{file}' {result}");
                 }
+
+                ConfigurationExpires = config.ValidUntil;
             }
             else
             {
