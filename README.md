@@ -88,6 +88,16 @@ If you want to use [floating licensing](https://help.cryptolens.io/licensing-mod
 6. Visit the [product page](https://app.cryptolens.io/Product) and click on the yellow button next to the license key that belongs to your client (to manage all activations). Now, click on "Download activation file" and put this file into the "licensefiles" folder created earlier.
 7. You can now send the license server (in the release folder, including all the files and folders) to your client.
 
+> **Note (for .NET users)** For the time being, `Key.Activate` needs to be called the same way as the in the Unity example: https://help.cryptolens.io/getting-started/unity
+
+```cs
+// call to activate
+var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-GCMVD", machineCode: "foo");
+
+// obtaining the license key (and verifying the signature automatically).
+var license = LicenseKey.FromResponse("RSAPubKey", result);
+```
+
 ### Loading settings from a config file
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 
