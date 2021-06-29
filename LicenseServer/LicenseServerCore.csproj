@@ -18,13 +18,13 @@
     
   <PackageId>LicenseServer</PackageId>
     
-  <AssemblyVersion>2.1.1.0</AssemblyVersion>
+  <AssemblyVersion>2.2.1.0</AssemblyVersion>
     
-  <FileVersion>2.1.1.0</FileVersion>
+  <FileVersion>2.2.1.0</FileVersion>
     
   <Copyright>Copyright © 2019 - 2021 Cryptolens AB</Copyright>
     
-  <Version>2.1</Version>
+  <Version>2.2</Version>
     
   <AssemblyName>LicenseServer</AssemblyName>
     
