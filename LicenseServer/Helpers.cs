@@ -296,6 +296,11 @@ namespace LicenseServer
             }
         }
 
+        public static string ProcessIncrementDecrementValueRequest(byte[] stream,, HttpWebRequest newRequest, HttpListenerContext context)
+        {
+            return null;
+        }
+
         public static bool LoadLicenseFromPath(Dictionary<LAKey, LAResult> licenseCache, ConcurrentDictionary<LAKey, string> keysToUpdate, string path, Action<string> updates)
         {
             try
@@ -440,7 +445,12 @@ namespace LicenseServer
                 return APIMethod.Activate;
             }
 
-            
+            if (path.ToLower().Replace("//", "/").Contains("/api/data/incrementintvaluetokey"))
+            {
+                return APIMethod.UploadValuesToKey;
+            }
+
+
             return APIMethod.Unknown;
         }
 
@@ -592,6 +602,8 @@ namespace LicenseServer
     public enum APIMethod
     {
         Unknown = 0,
-        Activate = 1
+        Activate = 1,
+        IncrementIntValueToKey = 2,
+        DecrementIntValueToKey = 3
     }
 }

@@ -298,6 +298,16 @@ namespace LicenseServer
                                     WriteMessage(activateResponse);
                                 }
                             }
+                            else if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.IncrementIntValueToKey ||
+                                    Helpers.GetAPIMethod(pathAndQuery) == APIMethod.DecrementIntValueToKey)
+                            {
+                                var incrementDecrementResponse = Helpers.ProcessIncrementDecrementValueRequest(originalStream, newRequest, context);
+
+                                if (incrementDecrementResponse != null)
+                                {
+                                    WriteMessage(incrementDecrementResponse);
+                                }
+                            }
                             else
                             {
                                 Stream reqStream = newRequest.GetRequestStream();
