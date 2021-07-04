@@ -296,7 +296,7 @@ namespace LicenseServer
             }
         }
 
-        public static string ProcessIncrementDecrementValueRequest(byte[] stream,, HttpWebRequest newRequest, HttpListenerContext context)
+        public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context)
         {
             return null;
         }
