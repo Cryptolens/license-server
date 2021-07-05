@@ -298,6 +298,23 @@ namespace LicenseServer
 
         public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context)
         {
+            string bodyParams = System.Text.Encoding.Default.GetString(stream);
+            var nvc = HttpUtility.ParseQueryString(bodyParams);
+
+            int productId = -1;
+            int.TryParse(nvc.Get("ProductId"), out productId);
+
+            var licenseKey = nvc.Get("Key");
+            int intValue = -1;
+            int.TryParse(nvc.Get("IntValue"), out intValue);
+
+            int doId = -1;
+            int.TryParse(nvc.Get("Id"), out doId);
+
+
+            // add and store log.
+
+
             return null;
         }
 
