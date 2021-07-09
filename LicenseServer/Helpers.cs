@@ -110,31 +110,6 @@ namespace LicenseServer
                         return $"The limit of the number of concurrent devices for '{licenseKey}' was reached. Activation failed.";
                     }
 
-
-                    //if (activationData.Any(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode))
-                    //{
-                    //    // maybe put this into concurrent dict instead.
-                    //    var activation = activatedMachinesFloating[key].Where(x => x.FloatingExpires > DateTime.UtcNow && x.Mid == machineCode)
-                    //                                  .OrderBy(x => x.Time).First();
-                    //    activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
-
-                    //    FloatingResult(result, activation, machineCode, context);
- 
-                    //    return $"Floating license {licenseKey} returned successfully.";
-                    //}
-                    //else if (activatedMachinesFloating[key].Count(x => x.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
-                    //{
-                    //    //activatedMachinesFloating.AddOrUpdate
-
-                    //    activationData.Add(new ActivationData { Mid = machineCode, Time = DateTime.UtcNow,  FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
-
-
-                    //    //FloatingResult(result, activation, machineCode, context);
-
-                    //    return $"Floating license {licenseKey} returned successfully.";
-                    //}
-
-
                     // return new license
                 }
                 else
@@ -156,7 +131,7 @@ namespace LicenseServer
 
                     try
                     {
-                        result.Response = ObtainNewLicense(stream, newRequest, context);
+                        result.Response = ForwardRequest(stream, newRequest, context);
                     }
                     catch (Exception ex) 
                     { 
@@ -201,7 +176,7 @@ namespace LicenseServer
             {
                 result = new LAResult();
 
-                result.Response = ObtainNewLicense(stream, newRequest, context);
+                result.Response = ForwardRequest(stream, newRequest, context);
 
                 if (cacheLength > 0)
                 {
@@ -296,7 +271,7 @@ namespace LicenseServer
             }
         }
 
-        public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context)
+        public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context, APIMethod method)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -310,6 +285,52 @@ namespace LicenseServer
 
             int doId = -1;
             int.TryParse(nvc.Get("Id"), out doId);
+
+            if(method == APIMethod.DecrementIntValueToKey)
+            {
+                doId = -1 * Math.Abs(doId);
+            }
+            else
+            {
+                doId = Math.Abs(doId);
+            }
+
+            if (!Program.attemptToRefresh && !string.IsNullOrEmpty(Program.RSAPublicKey))
+            {
+
+                LAResult result = null;
+
+                var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 0 };
+
+                var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 1 };
+
+                if (!Program.licenseCache.TryGetValue(key, out result) && !Program.licenseCache.TryGetValue(keyAlt, out result))
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the license file (to increment/decrement the data object)." });
+                    ReturnResponse(error, context);
+                    return $"Could not find the license file for '{licenseKey}' to continue with the increment or decrement operation.";
+                }
+
+                var doKey = new DOKey { DOID = doId, Key = licenseKey, ProductId = productId };
+                Program.DOOperations.AddOrUpdate(doKey, doId, (x, y) => y + doId);
+
+                var success = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Success, Message = "" });
+                ReturnResponse(success, context);
+                return $"Updated data object successfully.";
+            }
+            else
+            {
+                // for now, just forward the request.
+                ForwardRequest(stream, newRequest, context);
+
+                //try
+                //{
+                //}
+                //catch (Exception ex)
+                //{
+
+                //}
+            }
 
 
             // add and store log.
@@ -431,7 +452,7 @@ namespace LicenseServer
             return true;
         }
 
-        public static string ObtainNewLicense(byte[] originalStream, HttpWebRequest newRequest, HttpListenerContext context)
+        public static string ForwardRequest(byte[] originalStream, HttpWebRequest newRequest, HttpListenerContext context)
         {
             Stream reqStream = newRequest.GetRequestStream();
 
@@ -464,9 +485,13 @@ namespace LicenseServer
 
             if (path.ToLower().Replace("//", "/").Contains("/api/data/incrementintvaluetokey"))
             {
-                return APIMethod.UploadValuesToKey;
+                return APIMethod.IncrementIntValueToKey;
             }
 
+            if (path.ToLower().Replace("//", "/").Contains("/api/data/decrementintvaluetokey"))
+            {
+                return APIMethod.DecrementIntValueToKey;
+            }
 
             return APIMethod.Unknown;
         }
@@ -501,6 +526,37 @@ namespace LicenseServer
                 if (keysToUpdate.TryRemove(key, out res))
                 {
                     System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache", $"{key.ProductId}.{key.Key}.{key.SignMethod}.skm"), res);
+                }
+            }
+        }
+
+        public static void SaveDOLogToFile()
+        {
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "usage")))
+            {
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "usage"));
+            }
+
+            var keys = Program.DOOperations;
+
+            foreach (var key in keys.Keys)
+            {
+                byte[] previousBlock = new byte[] { 0 };
+
+                int res = 0;
+
+                if (keys.TryRemove(key, out res))
+                {
+                    try
+                    {
+                        previousBlock = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "usage", $"{key.ProductId}.{key.Key}-usage.skm"));
+                    }
+                    catch (Exception ex) { previousBlock = new byte[] { 0 }; }
+
+                    var res2 = DOOperations.AddDataDOOP(new DataObjectOperation { DataObjectId = key.DOID, Increment = res }, previousBlock, Program.RSAPublicKey);
+
+                    File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "usage", $"{key.ProductId}.{key.Key}-usage.skm"), res2);
+
                 }
             }
         }

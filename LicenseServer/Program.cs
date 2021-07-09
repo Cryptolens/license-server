@@ -30,6 +30,7 @@ namespace LicenseServer
         public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
         public static ConcurrentDictionary<LAKey, string> keysToUpdate = new ConcurrentDictionary<LAKey, string>();
         public static ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating = new ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>>();
+        public static ConcurrentDictionary<DOKey, int> DOOperations = new ConcurrentDictionary<DOKey, int>();
         public static int cacheLength = 0;
         public static bool attemptToRefresh = true;
         public static bool localFloatingServer = true;
@@ -40,7 +41,7 @@ namespace LicenseServer
 
         // A configuration can be generated on https://app.cryptolens.io/extensions/licenseserver
         // More instructions can be found here: https://github.com/Cryptolens/license-server/#floating-licenses-offline
-        public static string ConfigurationFromCryptolens = "";
+        public static string ConfigurationFromCryptolens = "ksUFW5jNH5DNAW3DkaxsaWNlbnNlZmlsZXPD2gGfPFJTQUtleVZhbHVlPjxNb2R1bHVzPnNHYnZ4d2RsRGJxRlhPTWxWVW5BRjVldzB0MFdwUFc3ckZwSTVqSFFPRmtodC8zMjZkdmg3dDc0UlllTXBqeTM1N05sam91aHBUTEEzYTZpZG5uNGo2YzNqbVBXQmtqWm5kR3NQTDRCcW0rZndFNDhuS3BHUGprajRxL3l6VDR0SFhCVHl2YUJqQThiVm9DVG51K0xpQzRYRWFMWlJUaEd6SW41S1FYS0NpZ2c2dFFSeTBHWEUxM1hZRlZ6L3gxbWpGYlQ5LzdkUzhwODVuOEJ1d2xZNUp2dUJJUWtLaHVDTkZmclV4Qld5dTg3Q0ZuWFdqSXVwQ0QyVk8vR2J4YUN2enJSakxaakFuZ0xDTXRaYllCQUxrc3FHUGdUVU43Wk0yNFhiUFd5THRLUGFYRjJpNFhSUjl1NmVUajVCZm5MYktBVTVQSVZmaklTK3ZOWVlvZ3RlUT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPtoDkzxSU0FLZXlWYWx1ZT48TW9kdWx1cz5td0JwdVliQW52QlNPQmtzbDJrTUlRcTluTHM5Z2FoaUpyUGtHTjZrT1h4Q0ZVbi8wN0MybWR1TVhRTkxtdEdVaWZQaGQ3TnJpZy91NGRCUlJyOWZNcEgxNDNwcFFwemhOM2dXemZsTlpDUDA3RU45VUJyZ2hwTks0cTlHUkF3VHFJM0VyMWFaQmd5K3hjTGJwQWVhQ1VZbjYwZ2hLdkQwSzl0Qkl0ejdEOXM9PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD51TlVoaUF2UU10SFdha1l4Q0ZlYmROemR2Z3B3dGxZY2hacnAvc1BuMmx5ZCswY05Ibm4wcnlTYm5LRXk1QVlMSHdzR3d6NzJOQXowd1NDV0pPUlArUT09PC9QPjxRPjFxN2IvUVdxTEpuSUFyS3ZhVTlLZG93M283N2VYRzRuNjE2TGFuVDliVDR3cDdkeCtta2ZDMHVCa1hIaHlGbjZsL3VEc0N3bzMybURQQm9pZEpMN2N3PT08L1E+PERQPmQwRmswaSsxRktVWmNCWjcyb01VRlpIUUxLYjExRis1SldjdnBTWm51UmRiQTE3emt2OWpKWUk4T1JJMUVMVHBoZzBLUHYybnd5dTgyOE1YdlJQbW1RPT08L0RQPjxEUT5YSTV3MitwNFR0aFNLZytkbnJxSHNRcU01blRnNjFxMnJUeEt3VEFGSHZja0JQc0xFZG9HZjFraldIQ1AxbEFzd1IrM3k5bU9HWndrNzJHWkgwZExUdz09PC9EUT48SW52ZXJzZVE+bjNveVFJWStrcDVza1RIc2doUkx6Y0R5d0hOMHRibDk1UWRuR1JMaWpKdTEwZU9rOTY0cUcydndxbVRhSUNSdTVLc1dXdlI3U3IraVhpaHViL0wyeVE9PTwvSW52ZXJzZVE+PEQ+RnJhWFI0Zi9CdXRaYVA0TFlqNlM5KzZPZlg2VWswRGM3U1gwT1U2Nnl1K3g4Vk93S05HZTJHbnJKaUFhL3B0U2hHcVg4Z1g1THJpSi9VNGM4dHlOTXUzVVNlbkxUTHp3MUJYa2MwK3E3cGtUcU0vWEpFV1Blb056NGlyZlA3RlRzajhzZnBvMFpNZDUza3M3SG9LMFBCeEh2RncvTnZya2RpeUZUU0lLbDRrPTwvRD48L1JTQUtleVZhbHVlPpLX/0Kh5FBiyDxyAMUBAGstJe4ROJWsaqrJkdTeYtSUtXstslHf0J8k6nfMROTg9E0qM2mjtky3OdlbvT834VoEzsl208A8y4QqCo6HAhJmMmwUh5+5rMKz/Z3T+EkHyT0RIN42M36G9y9PsAYM3qzrmLPzj6lvksETdAT+i0k4Yv/iRoxsO9yGLuf+J533x4wLjkiBr0NlVDQTbx4ZHMLSDOIxNzU2d1diDW3kliGBJu29AuQE+jdB7pFaCD+JxmFIsjGNAR6QcKYmli0Q1Uzl4jrCGks6R0ldSOsbraf+qqIEQP+80GwZU/H08YR6KCgHcLM6JU73HA160Wn2CgXuOqYU1UJdp4Cn4vN/e80=";
 
 
         static void Main(string[] args)
@@ -249,6 +250,14 @@ namespace LicenseServer
                 tm.Enabled = true;
             }
 
+            if(!attemptToRefresh)
+            {
+                var tm = new System.Timers.Timer(10000);
+                tm.Elapsed += DOSaver;
+                tm.AutoReset = true;
+                tm.Enabled = true;
+            }
+
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
 
@@ -257,6 +266,11 @@ namespace LicenseServer
         private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             Helpers.UpdateLocalCache(keysToUpdate);
+        }
+
+        private static void DOSaver(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Helpers.SaveDOLogToFile();
         }
 
         static void ResponseThread()
@@ -301,7 +315,7 @@ namespace LicenseServer
                             else if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.IncrementIntValueToKey ||
                                     Helpers.GetAPIMethod(pathAndQuery) == APIMethod.DecrementIntValueToKey)
                             {
-                                var incrementDecrementResponse = Helpers.ProcessIncrementDecrementValueRequest(originalStream, newRequest, context);
+                                var incrementDecrementResponse = Helpers.ProcessIncrementDecrementValueRequest(originalStream, newRequest, context, Helpers.GetAPIMethod(pathAndQuery));
 
                                 if (incrementDecrementResponse != null)
                                 {
