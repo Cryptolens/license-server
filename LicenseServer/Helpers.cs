@@ -311,6 +311,8 @@ namespace LicenseServer
                     return $"Could not find the license file for '{licenseKey}' to continue with the increment or decrement operation.";
                 }
 
+                //TODO: make sure this DO also exists in the license file.
+
                 var doKey = new DOKey { DOID = doId, Key = licenseKey, ProductId = productId };
                 Program.DOOperations.AddOrUpdate(doKey, doId, (x, y) => y + doId);
 
