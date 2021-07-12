@@ -106,6 +106,8 @@ To get started, please follow the same steps as described in the [floating licen
 
 When this is done, all usage information will be stored in the "usage" folder. The structure of the logs is described here: [https://eprint.iacr.org/2021/937](https://eprint.iacr.org/2021/937)
 
+> **Note:** The license file in the `licensefiles` folder needs to have the data objects that will be incremented or decremented. Otherwise, the license server will throw an error.
+
 
 ### Loading settings from a config file
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:

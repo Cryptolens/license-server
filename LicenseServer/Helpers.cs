@@ -311,7 +311,12 @@ namespace LicenseServer
                     return $"Could not find the license file for '{licenseKey}' to continue with the increment or decrement operation.";
                 }
 
-                //TODO: make sure this DO also exists in the license file.
+                if(!result.LicenseKey.DataObjects.Any(x=> x.Id == doId))
+                {
+                    var error = JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "License server error: could not find the data object in the license file (to increment/decrement the data object)." });
+                    ReturnResponse(error, context);
+                    return $"Could not find the data object with ID {doId} in the license file for '{licenseKey}' to continue with the increment or decrement operation.";
+                }
 
                 var doKey = new DOKey { DOID = doId, Key = licenseKey, ProductId = productId };
                 Program.DOOperations.AddOrUpdate(doKey, doId, (x, y) => y + doId);
