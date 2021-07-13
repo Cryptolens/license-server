@@ -98,6 +98,17 @@ var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-
 var license = LicenseKey.FromResponse("RSAPubKey", result);
 ```
 
+##### Usage-based licensing offline
+If the license server is set to work offline, it is still possible to collect information about usage (that is stored in data objects) and bill your clients for it.
+At the time of writing, only data objects associated with a license key can be used.
+
+To get started, please follow the same steps as described in the [floating license offline](#floating-licenses-offline) section. When creating the configuration file, please make sure that _offline mode_ is enabled.
+
+When this is done, all usage information will be stored in the "usage" folder. The structure of the logs is described here: [https://eprint.iacr.org/2021/937](https://eprint.iacr.org/2021/937)
+
+> **Note:** The license file in the `licensefiles` folder needs to have the data objects that will be incremented or decremented. Otherwise, the license server will throw an error.
+
+
 ### Loading settings from a config file
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 
