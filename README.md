@@ -1,5 +1,7 @@
 # License Server
 
+> **Note**: a seprate subscription is required to use the license server: https://cryptolens.io/products/license-server/
+
 ## Idea
 **Problem**: Large companies tend to have strict policies that restrict certain machines to have direct internet access. This is a problem if we want license files on them to be up-to-date.
 
