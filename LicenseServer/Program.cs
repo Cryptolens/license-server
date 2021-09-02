@@ -297,7 +297,9 @@ namespace LicenseServer
 
                         if (original.HttpMethod == "GET")
                         {
-                            throw new ArgumentException("GET requests are not supported.");
+                            WriteMessage("GET requests are not supported. Error.");
+
+                            Helpers.ReturnResponse(Newtonsoft.Json.JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "GET requests are not supported in this version of the license server." }), context);
                         }
                         else
                         {
