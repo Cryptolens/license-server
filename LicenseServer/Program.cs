@@ -21,10 +21,44 @@ using System.Collections.Concurrent;
 using SKM.V3;
 using SKM.V3.Models;
 
+using System.ServiceProcess;
+
 namespace LicenseServer
 {
     class Program
     {
+        public const string versionInfo = "v2.4 (2021-10-14)" ;
+
+        public const string ServiceName = "license-server";
+
+        public class Service : ServiceBase
+        {
+            public Service()
+            {
+                ServiceName = Program.ServiceName;
+
+                if (!System.Diagnostics.EventLog.SourceExists("MySource"))
+                {
+                    System.Diagnostics.EventLog.CreateEventSource(
+                        "MySource", "MyNewLog");
+                }
+            }
+
+            protected override void OnStart(string[] args)
+            {
+                //Program.Start(args);
+                Program.Initialization(args, runAsService: true);
+                EventLog.WriteEntry("");
+            }
+
+            protected override void OnStop()
+            {
+                //Program.Stop();
+                EventLog.WriteEntry("Closed.");
+            }
+        }
+
+
         static HttpListener httpListener = new HttpListener();
         public static int port = 8080;
         public static Dictionary<LAKey, LAResult> licenseCache = new Dictionary<LAKey, LAResult>();
@@ -46,19 +80,33 @@ namespace LicenseServer
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Cryptolens License Server v2.2\n");
+            if (!Environment.UserInteractive)
+            {
+                using (var service = new Service())
+                    ServiceBase.Run(service);
+            }
+            else
+            {
+                Program.Initialization(args);
+            }
 
-            if (!string.IsNullOrEmpty(ConfigurationFromCryptolens))
+        }
+
+        public static void Initialization(string[] args, bool runAsService = false)
+        {
+            Console.WriteLine($"Cryptolens License Server {versionInfo}\n");
+
+            if (!string.IsNullOrEmpty(ConfigurationFromCryptolens) || runAsService)
             {
                 var config = Helpers.ReadConfiguration(ConfigurationFromCryptolens);
 
-                if(config == null)
+                if (config == null)
                 {
                     WriteMessage($"Configuration data could not be read.");
                     return;
                 }
 
-                if(config.ValidUntil < DateTimeOffset.UtcNow)
+                if (config.ValidUntil < DateTimeOffset.UtcNow)
                 {
                     WriteMessage($"Configuration data is outdated. Please contact the vendor to receive a new version of the license server.");
                     return;
@@ -250,7 +298,7 @@ namespace LicenseServer
                 tm.Enabled = true;
             }
 
-            if(!attemptToRefresh)
+            if (!attemptToRefresh)
             {
                 var tm = new System.Timers.Timer(10000);
                 tm.Elapsed += DOSaver;
@@ -260,7 +308,6 @@ namespace LicenseServer
 
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
-
         }
 
         private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -342,8 +389,8 @@ namespace LicenseServer
                     }
                     else
                     {
-                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server 2.0 -- port {port}</title></head>" +
-                        $"<body><p>Welcome to the <strong>Cryptolens License Server 2.0</strong> -- port {port}! If you see this message, it means " +
+                        byte[] responseArray = Encoding.UTF8.GetBytes($"<html><head><title>Cryptolens License Server {versionInfo} -- port {port}</title></head>" +
+                        $"<body><p>Welcome to the <strong>Cryptolens License Server {versionInfo}</strong> -- port {port}! If you see this message, it means " +
                         "everything is working properly.</em></p><p>" +
                         "If you can find its documentation <a href='https://github.com/cryptolens/license-server'>here</a>." +
                         "</p></body></html>");

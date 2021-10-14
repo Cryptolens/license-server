@@ -18,9 +18,9 @@
     
   <PackageId>LicenseServer</PackageId>
     
-  <AssemblyVersion>2.3.1.0</AssemblyVersion>
+  <AssemblyVersion>2.4.1.0</AssemblyVersion>
     
-  <FileVersion>2.3.1.0</FileVersion>
+  <FileVersion>2.4.1.0</FileVersion>
     
   <Copyright>Copyright © 2019 - 2021 Cryptolens AB</Copyright>
     
@@ -39,6 +39,7 @@
     <PackageReference Include="Cryptolens.Licensing.CrossPlatform" Version="4.0.34" />
     <PackageReference Include="MessagePack" Version="2.2.85" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

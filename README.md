@@ -22,6 +22,8 @@ You can also specify the port inside the application.
 
 > Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
+If you would like to run the license server as a service on Windows, you can accomplish that as described [here](#running-the-license-server-as-a-service).
+
 ### Running on Linux and Mac
 To run the license server on either Linux or Mac, you need to make sure that .NET 5 runtime is installed (read more [here](https://dotnet.microsoft.com/download/dotnet/5.0)). Once it is installed, the license server can be started as follows:
 
@@ -124,3 +126,24 @@ To make it easier to deploy the license server on customer site, you can add all
 ```
 
 The `ActivationFiles` can either reference a specific file or a folder. If it references a folder, all files with the `.skm` extension will be loaded.
+
+
+### Running the license server as a service
+The license server can run as a Windows service in the background. This can be accomplished as follows (using [sc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create)):
+
+```
+sc create license-server  binpath="D:\path\to\licenseserver\LicenseServer.exe" start=auto
+net start license-server3
+```
+
+Note: the path to the license server needs to be absolute. Furthermore, it is important that the `ConfigurationFromCryptolens` variable is not empty and uses your own configuration. The configuration can be obtained on [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver).
+
+Below are other useful commands:
+```
+sc stop license-server
+sc queryex license-server
+sc delete  license-server
+```
+
+If you need any help, please let us know at support@cryptolens.io.
+
