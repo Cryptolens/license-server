@@ -130,7 +130,7 @@ The `ActivationFiles` can either reference a specific file or a folder. If it re
 
 
 ### Running the license server as a service
-The license server can run as a Windows service in the background. This can be accomplished as follows (using [sc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create)). Note, these commands need to be executed as an Administrator:
+The license server can run as a Windows service in the background. This can be accomplished as follows (using [sc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create)). Note, these commands need to be ran as an Administrator:
 
 ```
 sc create license-server  binpath="D:\path\to\licenseserver\LicenseServer.exe" start=auto
@@ -139,7 +139,7 @@ net start license-server3
 
 Note: the path to the license server needs to be absolute. Furthermore, it is important that the `ConfigurationFromCryptolens` variable is not empty and uses your own configuration. The configuration can be obtained on [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver).
 
-We have tested the license server version that targets .NET Framework 4.6.1
+We have tested the license server version that targets .NET Framework 4.6.1.
 
 Below are other useful commands:
 ```
