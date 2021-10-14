@@ -22,6 +22,7 @@ You can also specify the port inside the application.
 
 > Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
+### Running as a Windows service
 If you would like to run the license server as a service on Windows, you can accomplish that as described [here](#running-the-license-server-as-a-service).
 
 ### Running on Linux and Mac
@@ -129,7 +130,7 @@ The `ActivationFiles` can either reference a specific file or a folder. If it re
 
 
 ### Running the license server as a service
-The license server can run as a Windows service in the background. This can be accomplished as follows (using [sc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create)):
+The license server can run as a Windows service in the background. This can be accomplished as follows (using [sc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create)). Note, these commands need to be executed as an Administrator:
 
 ```
 sc create license-server  binpath="D:\path\to\licenseserver\LicenseServer.exe" start=auto
@@ -137,6 +138,8 @@ net start license-server3
 ```
 
 Note: the path to the license server needs to be absolute. Furthermore, it is important that the `ConfigurationFromCryptolens` variable is not empty and uses your own configuration. The configuration can be obtained on [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver).
+
+We have tested the license server version that targets .NET Framework 4.6.1
 
 Below are other useful commands:
 ```
