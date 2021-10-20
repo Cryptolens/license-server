@@ -25,7 +25,7 @@ namespace LicenseServer
 {
     public class Helpers
     {
-        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating)
+        public static string ProcessActivateRequest(byte[] stream, Dictionary<LAKey, LAResult> licenseCache, int cacheLength, HttpWebRequest newRequest, HttpListenerContext context, ConcurrentDictionary<LAKey, string> keysToUpdate, bool attemptToRefresh, bool localFloatingServer, ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating, APIMethod method = APIMethod.Unknown)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
             var nvc = HttpUtility.ParseQueryString(bodyParams);
@@ -122,7 +122,7 @@ namespace LicenseServer
                 return null;
 
             }
-            else if (licenseCache.TryGetValue(key, out result) && result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true && cacheLength > 0)
+            else if (licenseCache.TryGetValue(key, out result) && (method == APIMethod.GetKey || result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true) && cacheLength > 0)
             {
                 TimeSpan ts = DateTime.UtcNow - result.SignDate;
                 if (ts.Days >= cacheLength || attemptToRefresh)
@@ -176,13 +176,27 @@ namespace LicenseServer
             {
                 result = new LAResult();
 
-                result.Response = ForwardRequest(stream, newRequest, context);
+                try
+                {
+                    result.Response = ForwardRequest(stream, newRequest, context);
+                }
+                catch (Exception ex)
+                {
+                    ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (app.cryptolens.io:443)." }), context);
+                    return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message} and stack trace {ex?.StackTrace}";
+                }
 
                 if (cacheLength > 0)
                 {
                     if (signMethod == 1)
                     {
                         var resultObject = JsonConvert.DeserializeObject<RawResponse>(result.Response);
+
+                        if(!SKM.V3.Methods.Helpers.IsSuccessful(resultObject))
+                        {
+                            return $"The error '{resultObject?.Message}' was received from the server for license '{licenseKey}' and machine code '{machineCode}'. The method {method} was used. Read more at https://help.cryptolens.io/faq/index#troubleshooting-api-errors.";
+                        }
+
                         var license2 = JsonConvert.DeserializeObject<LicenseKeyPI>(System.Text.UTF8Encoding.UTF8.GetString(Convert.FromBase64String(resultObject.LicenseKey))).ToLicenseKey();
                         result.SignDate = license2.SignDate;
                         result.LicenseKey = license2;
@@ -199,6 +213,7 @@ namespace LicenseServer
 
                     return $"Added to the cache the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
+
                 return null;
             }
         }
@@ -490,6 +505,11 @@ namespace LicenseServer
                 return APIMethod.Activate;
             }
 
+            if (path.ToLower().Replace("//", "/").Contains("/api/key/getkey"))
+            {
+                return APIMethod.GetKey;
+            }
+
             if (path.ToLower().Replace("//", "/").Contains("/api/data/incrementintvaluetokey"))
             {
                 return APIMethod.IncrementIntValueToKey;
@@ -684,6 +704,7 @@ namespace LicenseServer
         Unknown = 0,
         Activate = 1,
         IncrementIntValueToKey = 2,
-        DecrementIntValueToKey = 3
+        DecrementIntValueToKey = 3,
+        GetKey=4
     }
 }

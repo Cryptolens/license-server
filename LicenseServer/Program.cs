@@ -75,7 +75,7 @@ namespace LicenseServer
 
         // A configuration can be generated on https://app.cryptolens.io/extensions/licenseserver
         // More instructions can be found here: https://github.com/Cryptolens/license-server/#floating-licenses-offline
-        public static string ConfigurationFromCryptolens = "ksUFW5jNH5DNAW3CkaxsaWNlbnNlZmlsZXPD2gGfPFJTQUtleVZhbHVlPjxNb2R1bHVzPnNHYnZ4d2RsRGJxRlhPTWxWVW5BRjVldzB0MFdwUFc3ckZwSTVqSFFPRmtodC8zMjZkdmg3dDc0UlllTXBqeTM1N05sam91aHBUTEEzYTZpZG5uNGo2YzNqbVBXQmtqWm5kR3NQTDRCcW0rZndFNDhuS3BHUGprajRxL3l6VDR0SFhCVHl2YUJqQThiVm9DVG51K0xpQzRYRWFMWlJUaEd6SW41S1FYS0NpZ2c2dFFSeTBHWEUxM1hZRlZ6L3gxbWpGYlQ5LzdkUzhwODVuOEJ1d2xZNUp2dUJJUWtLaHVDTkZmclV4Qld5dTg3Q0ZuWFdqSXVwQ0QyVk8vR2J4YUN2enJSakxaakFuZ0xDTXRaYllCQUxrc3FHUGdUVU43Wk0yNFhiUFd5THRLUGFYRjJpNFhSUjl1NmVUajVCZm5MYktBVTVQSVZmaklTK3ZOWVlvZ3RlUT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPtoDkzxSU0FLZXlWYWx1ZT48TW9kdWx1cz5uK1lZRTVPZGg0S3pHZFVQUi9ETm9pRGJiK2huVnlsVkpzVmIyV1VaUENDQVFnWDRaRk9hVDZuK01iR25Bcm9uNGxOUTYzVXlvRk5TaVJiOFJVcllPSXk4aHNDTlRseW5LUFVFelRVVmR4VGpnRWkzOGVqWTBVM0xzNXVoY0NjRkJyakNEVGExNlFVbkJNSzdtZUQ4V09RQW41cEIycTZCQlVreFdtdUN2WDA9PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD40RUlGUTZadkt5UTlpOElhbXl0enRGajhrSnF4V1hqMkxuMHM4TTZFMjVaYUU1SlAweGFVcDhhR1U1djBvOWY3NWpSeEhQUzAvd0lmNktaYmdsdklCUT09PC9QPjxRPnRvZ0dBVXh6Smg5bjlra1h5R3pZMFBoc1ZwbUl5anNWZTkwd0EyWU1yY1RoOCthWEk3UDJqK1BzbkUwbnVJUGFPdEFKNEphQ1JCdEJnRFZjeGRweEdRPT08L1E+PERQPkhRVk9LeGdCc09LS3VHaFJDeDJQWnBwUmJPRW43RDAwRm9ZS1o4dEI5Q3k3MFdhUXYrOWZJMnNVZlFOa29FTldETTlpaCsyKzhuVXk3ZWVCVmhoTWhRPT08L0RQPjxEUT5zMytRYURhR0JqZGNSUlljRFR6OCtvTlNCdGQxYldvczltSE5sWW9GYmR6dlZxcXNkcS9EQ0QxYnNWa3Vkb1V6VmlLL2s5eHV2Z3NQbnNUYk5yWmFBUT09PC9EUT48SW52ZXJzZVE+MTVNSytoQVFxODV6YUNEb0lEWkRCcEJmZjRnZjlGZGNZYm1rSFJ3TXcxZWR5cFFydlhkL2M2TkVqY2greDYranJIaGNxTUtHL0cxZk1WcWFCUUk5MFE9PTwvSW52ZXJzZVE+PEQ+SEFBQ3FORHhaYlNyTU1PWXdyQUdEbFZESCtoYVNrN1VXSzc0Tzh3aW5GOFRucHdsaUVvRWpGMDRCRk0zNi9nVnVtSDlHbEpDVElWeXYwdGRYelB4UTBTVDB2Qk0xUTAwZnFVQVZRNUlwUTZSbGxNTzZmd1ZpWjlxbmpKQTFBWFhZUVZsQ2hQbzN4cjM3S0EybUdERWE4bUJ0bGFUKys5MitoQXpacXBZUUprPTwvRD48L1JTQUtleVZhbHVlPpLX/0zOY+BjTmZrAMUBAIy9OfmygmJEV5aR7U2YrbwsdzorW9fObIag7jaXoqNvZk9Qb54zwZ7imavhlAGQfXm00RgmWMVpgI+Molm1Gt+BML+/NcEL0wUFYr2y8gTzeutKVdnjr59nJX2A+uag462O4lYjDPCU3VimIDpQ5CmnYL6v+KkOx5BI2SbGOVSfnl8mQb1zxlKYf6WIP1+/GwHsi7M83O1JFdA7B+AwTc03rH/Who64A/dP1cqiqoIZi5qK8uadeIjLE12feqv+pZhRKMDWErH3GGvx49ICiBsOWaTF0WFwyTV3POI41AAVujazl1C0CjDu5HHZaiMhqKlZXL1GxCHYyu1+SLLZ2ws=";
+        public static string ConfigurationFromCryptolens = "ksUFW5jNH5DNAW3CkaxsaWNlbnNlZmlsZXPC2gGfPFJTQUtleVZhbHVlPjxNb2R1bHVzPnNHYnZ4d2RsRGJxRlhPTWxWVW5BRjVldzB0MFdwUFc3ckZwSTVqSFFPRmtodC8zMjZkdmg3dDc0UlllTXBqeTM1N05sam91aHBUTEEzYTZpZG5uNGo2YzNqbVBXQmtqWm5kR3NQTDRCcW0rZndFNDhuS3BHUGprajRxL3l6VDR0SFhCVHl2YUJqQThiVm9DVG51K0xpQzRYRWFMWlJUaEd6SW41S1FYS0NpZ2c2dFFSeTBHWEUxM1hZRlZ6L3gxbWpGYlQ5LzdkUzhwODVuOEJ1d2xZNUp2dUJJUWtLaHVDTkZmclV4Qld5dTg3Q0ZuWFdqSXVwQ0QyVk8vR2J4YUN2enJSakxaakFuZ0xDTXRaYllCQUxrc3FHUGdUVU43Wk0yNFhiUFd5THRLUGFYRjJpNFhSUjl1NmVUajVCZm5MYktBVTVQSVZmaklTK3ZOWVlvZ3RlUT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPtoDkzxSU0FLZXlWYWx1ZT48TW9kdWx1cz56c1lBa0NGRnJlVld6V2c1cTFEWjNyZEpDZjhYNVNTcGZNOXdwWFFMaWs0eTA5MUVRVmZLeTMrTytEVkRTbmV5TjY4WDdkdHlIeWp4aFZraDFVbVFCUm96VVMxYnZmYjZSVEFRdU0rZzRVMWVhMTJqVTFDb3FBelI0emdnbFNtZjFIQ2IvRE40WGJGZU9zNTZISTFtckZKKzRQeXljTWZiRU9rcXBZa1BhQzA9PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD45WVhhMElFeFVRb0JBL1VBUkVpd1MrVjFURThzL2FTU3NCNDg1Mm8rSzJIMzIzQU1nVFBaY25xaFlvOFl4S2R6eHh2S29lKzd5VjhoTTAvdkFULzZrdz09PC9QPjxRPjE1alhIdkp2MTQycUdvTTVpZmRQT1ZnbSt4ZkkxWlNHZ3pWNmJ6OGthT0dHL2s3MUUwemJKUkg1WjR2SWRNRit6OUNaQkoxR0FyNTVFRjhPMUwwS1B3PT08L1E+PERQPjlOTjRRZWhDRENSa3BOUi9ZcGYxTElsdjhSc1dxd3FidDRFL2pDZDJQUDVoRVBGbmxzTGtOM0t2VVQrT0hETTZrVFpXVmlwZllFczdLUmF4SnRic2Z3PT08L0RQPjxEUT5WNW4xeHRCUlcyOW5iN0JrUDhmcU8rMnlvUkh2KzhDR3kyZCtZUmR4N3QrOFh6YXI0L1Mxa3FGMENudkVycFEwdDdJVmlzZHd2QXF5M0ZFVGtLTmpOdz09PC9EUT48SW52ZXJzZVE+cGJ3enEzNDR1OVlJOGw0T0ZDQ3IwZkRlb3dVSWQzYTAyYTM1Slg2M2M3L1FkWmhjZ2duem1nUjFSV1B5ZThvUU9JbFN2MEw1SkRsUmFnT3oraWdlNXc9PTwvSW52ZXJzZVE+PEQ+RDU2QVUyTFlCeHRBVTlMUUxHTTJtZTdCYXlwa1RUQllSeS9LUkExQWcrbUZTR0M1ODYra2gzdXl1b2dYZGF3Vi84UFByRzE3c09QZ1hxRE5mL1dIRmVEQU1vazBHOXp4TU04c2RFZVA0RzVFSURCL1RkYVlVek9WcHMzb3VaN3pzeGxxeHRtMFBvZFBRT1dqcGZFaHhPSm8zZVBnZndJd0hTTEI5UGgvWnBjPTwvRD48L1JTQUtleVZhbHVlPpLX/9M7h/BjUP8MAMUBAG+AAU6AOsXKxG3FRZjxM2rBG1ssjGfqTUKS0pcWS2AMvdSyOPC1FAznQeKNZdU1vjj7eQvaPWkxWPUmeWLuIDjz2Qhsv8sCF0u5yCMcVFW4Z6J/T9lHSD989RunUY7PqXaDAyQsrBItrALUQAHFPrxrtE1gzSXwmhs/XLXPzbzkjPyYUdKiIdr0q8mbsdlm7YNUEvLv2LRi3mKfA7Kwrs/yh22I1FZnYr5//7z8ARuzCQ41R1BLXoSGOhVeyIj5MynPfNVOOJLhEdPbR2Yt5cMYmruuWpos54DOxfdS59A5OqaMLpEsufpjPYEUqRh0KPZPx2NaInwEZS0j7mRFwRk=";
 
 
         static void Main(string[] args)
@@ -352,17 +352,19 @@ namespace LicenseServer
                         {
                             // for POST
 
-                            if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.Activate) 
+                            APIMethod method = Helpers.GetAPIMethod(pathAndQuery);
+
+                            if (method == APIMethod.Activate || method == APIMethod.GetKey) 
                             {
-                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh, localFloatingServer, activatedMachinesFloating);
+                                var activateResponse = Helpers.ProcessActivateRequest(originalStream, licenseCache, cacheLength, newRequest, context, keysToUpdate, attemptToRefresh, localFloatingServer, activatedMachinesFloating, method);
 
                                 if (activateResponse != null)
                                 {
                                     WriteMessage(activateResponse);
                                 }
                             }
-                            else if(Helpers.GetAPIMethod(pathAndQuery) == APIMethod.IncrementIntValueToKey ||
-                                    Helpers.GetAPIMethod(pathAndQuery) == APIMethod.DecrementIntValueToKey)
+                            else if(method == APIMethod.IncrementIntValueToKey ||
+                                    method == APIMethod.DecrementIntValueToKey)
                             {
                                 var incrementDecrementResponse = Helpers.ProcessIncrementDecrementValueRequest(originalStream, newRequest, context, Helpers.GetAPIMethod(pathAndQuery));
 
