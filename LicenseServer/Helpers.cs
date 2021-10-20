@@ -51,7 +51,7 @@ namespace LicenseServer
 
             var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = Math.Abs(signMethod-1) };
 
-            if (floatingTimeInterval > 0 && localFloatingServer)
+            if ((method == APIMethod.GetKey || floatingTimeInterval > 0) && localFloatingServer)
             {
                 if (signMethod == 0)
                 {
@@ -76,7 +76,7 @@ namespace LicenseServer
                     return $"Could not find the license file for '{licenseKey}' to continue with the floating activation.";
                 }
 
-                if(result.LicenseKey.MaxNoOfMachines > 0)
+                if(result.LicenseKey.MaxNoOfMachines > 0 || method == APIMethod.GetKey)
                 {
                     var activationData = new ConcurrentDictionary<string, ActivationData>();
                     activatedMachinesFloating.TryGetValue(key, out activationData);
@@ -84,6 +84,12 @@ namespace LicenseServer
                     if(activationData == null)
                     {
                         activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentDictionary<string, ActivationData>(), (x, y) => y);
+                    }
+
+                    if(method == APIMethod.GetKey)
+                    {
+                        FloatingResult(result, null, null, context, 1, activationData.Values.Select(x => new ActivationData { Time = x.Time, FloatingExpires = x.FloatingExpires, FriendlyName = x.FriendlyName, IP = x.IP, Mid = x.Mid }).ToList());
+                        return $"Floating license {licenseKey} returned successfully using a GetKey request. The data from the local license server is used.";
                     }
 
                     var activation = new ActivationData();
@@ -118,8 +124,6 @@ namespace LicenseServer
                     FloatingResult(result, activation, machineCode, context);
                     return $"Floating license {licenseKey} returned successfully.";
                 }
-
-                return null;
 
             }
             else if (licenseCache.TryGetValue(key, out result) && (method == APIMethod.GetKey || result?.LicenseKey?.ActivatedMachines.Any(x=> x.Mid == machineCode) == true) && cacheLength > 0)
@@ -218,14 +222,22 @@ namespace LicenseServer
             }
         }
 
-        public static void FloatingResult(LAResult result, ActivationData activation, string machineCode, HttpListenerContext context, int signmetod = 1)
+        public static void FloatingResult(LAResult result, ActivationData activation, string machineCode, HttpListenerContext context, int signmetod = 1, List<ActivationData> activations = null)
         {
             if (signmetod == 1)
             {
                 var licenseKeyToReturn = new LicenseKeyPI { };
 
-                licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time =
+                if (activations != null)
+                {
+                    licenseKeyToReturn.ActivatedMachines = activations.Select(x => new ActivationDataPI {  FriendlyName = x.FriendlyName, IP = x.IP, Time = ToUnixTimestamp(x.Time.Value), Mid = $"floating:{x.Mid}"}).ToList();
+                }
+                else
+                {
+                    licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time =
                           ToUnixTimestamp(activation.Time.Value)} };
+                }
+
                 licenseKeyToReturn.Block = result.LicenseKey.Block;
                 licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
                 licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
