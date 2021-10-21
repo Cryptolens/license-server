@@ -102,6 +102,7 @@ var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-
 // obtaining the license key (and verifying the signature automatically).
 var license = LicenseKey.FromResponse("RSAPubKey", result);
 ```
+> **Note** If the local license server is enabled, floating license status will not be synchronized with Cryptolens, even if online mode is enabled. Moreover, GetKey request will return the information stored on the local license server and sign it using the local license server's private key. This means that if you have enabled floating licensing offline, you need to use public key that was shown on the [configuration page](https://app.cryptolens.io/extensions/LicenseServer) for both `Activate` and `GetKey` requests. 
 
 ##### Usage-based licensing offline
 If the license server is set to work offline, it is still possible to collect information about usage (that is stored in data objects) and bill your clients for it.
@@ -137,7 +138,7 @@ sc create license-server binpath="D:\path\to\licenseserver\LicenseServer.exe" st
 net start license-server
 ```
 
-Note: the path to the license server needs to be absolute. Furthermore, it is important that the `ConfigurationFromCryptolens` variable is not empty and uses your own configuration. The configuration can be obtained on [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver).
+Note: the path to the license server needs to be absolute. Furthermore, it is important that the `ConfigurationFromCryptolens` variable is not empty and uses your own configuration. The configuration can be obtained on [https://app.cryptolens.io/extensions/licenseserver](https://app.cryptolens.io/extensions/licenseserver). When creating a new configuration, please set **Activation file folder** to an absolute path. For example, **C:\license-files**. 
 
 We have tested the license server version that targets .NET Framework 4.6.1.
 
