@@ -510,6 +510,12 @@ namespace LicenseServer
             context.Response.Close();
         }
 
+        public static void HTMLResponse(string title, string body, HttpListenerContext context)
+        {
+            ReturnResponse($"<html><head><title>{title}</title></head>" +
+                        $"<body>{body}</body></html>", context);
+        }
+
         public static APIMethod GetAPIMethod(string path)
         {
             if(path.ToLower().Replace("//","/").Contains("/api/key/activate"))
@@ -717,6 +723,7 @@ namespace LicenseServer
         Activate = 1,
         IncrementIntValueToKey = 2,
         DecrementIntValueToKey = 3,
-        GetKey=4
+        GetKey = 4,
+        Deactivate = 5
     }
 }
