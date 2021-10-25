@@ -395,8 +395,23 @@ namespace LicenseServer
                         Helpers.HTMLResponse("Stats", $"<table border=1><tr><th>Property</th><th>Value</th></tr>" +
                             $"<tr><td>Licenses in cache</td><td>{licenseCache.Keys.Count}</td></tr>" +
                             $"<tr><td>Number of licenses (floating offline)</td><td>{activatedMachinesFloating.Keys.Count}</td></tr>" +
-                            $"<tr><td>Number of machines (floating offline)</td><td>{totalFloatingMachines}</td></tr>", context);
+                            $"<tr><td>Number of machines (floating offline)</td><td>{totalFloatingMachines}</td></tr></table>", context);
+                        WriteMessage("Web dashboard served successfully.");
+                    }
+                    else if (context.Request.Url.LocalPath.ToLower().StartsWith("/licenses"))
+                    {
+                        var totalFloatingMachines = activatedMachinesFloating.Values.Sum(x => x.Count);
 
+                        var sb = new StringBuilder();
+                        sb.Append("<p>The following licenses are cached by the license server.</p>");
+                        sb.Append("<ul>");
+                        foreach (var license in licenseCache)
+                        {
+                            sb.Append($"<li><a href='#'>{license.Key.Key}</a></li>");
+                        }
+                        sb.Append("</ul>");
+                        
+                        Helpers.HTMLResponse("Stats", sb.ToString(), context);
                         WriteMessage("Web dashboard served successfully.");
                     }
                     else
