@@ -23,6 +23,8 @@ using SKM.V3.Models;
 
 using System.ServiceProcess;
 
+using System.Net.Http;
+
 namespace LicenseServer
 {
     class Program
@@ -404,13 +406,46 @@ namespace LicenseServer
 
                         var sb = new StringBuilder();
                         sb.Append("<p>The following licenses are cached by the license server.</p>");
-                        sb.Append("<ul>");
+                        sb.Append("<table border=1 style='border-style:groove;'><tr><th>License</th><th>Operations</th></tr>");
                         foreach (var license in licenseCache)
                         {
-                            sb.Append($"<li><a href='#'>{license.Key.Key}</a></li>");
+                            sb.Append($"<tr><td>{license.Key.Key}</td><td></td></tr>");
                         }
-                        sb.Append("</ul>");
+                        sb.Append("</table>");
                         
+                        Helpers.HTMLResponse("Stats", sb.ToString(), context);
+                        WriteMessage("Web dashboard served successfully.");
+                    }
+                    else if (context.Request.Url.LocalPath.ToLower().StartsWith("/report/floatingusage"))
+                    {
+                        var totalFloatingMachines = activatedMachinesFloating.Values.Sum(x => x.Count);
+
+                        string product = context.Request.QueryString.Get("productId");
+                        string key = context.Request.QueryString.Get("license");
+
+                        int productId = -1;
+                        int.TryParse(product, out productId);
+
+                        int maxNoOfMachines = 0;
+
+                        LAResult res = null;
+
+                        if(!licenseCache.TryGetValue(new LAKey() { Key = key, ProductId = productId, SignMethod = 1 }, out res))
+                        {
+                            licenseCache.TryGetValue(new LAKey() { Key = key, ProductId = productId, SignMethod = 0 }, out res);
+                        }
+
+                        if(res != null)
+                        {
+                            maxNoOfMachines = res.LicenseKey.MaxNoOfMachines;
+                        }
+                        
+                        var sb = new StringBuilder();
+                        sb.Append("<p>The following licenses are cached by the license server.</p>");
+
+                        sb.Append(AnalyticsMethods.SummaryAuditFloating(productId, key, "", maxNoOfMachines));
+                       
+
                         Helpers.HTMLResponse("Stats", sb.ToString(), context);
                         WriteMessage("Web dashboard served successfully.");
                     }
