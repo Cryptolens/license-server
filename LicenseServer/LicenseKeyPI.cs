@@ -54,7 +54,7 @@ namespace LicenseServer
 
         public CustomerPI Customer { get; set; }
 
-        public List<ActivationDataPI> ActivatedMachines { get; set; }
+        public List<ActivationDataPIV3> ActivatedMachines { get; set; }
 
         public bool TrialActivation { get; set; }
 
@@ -74,7 +74,7 @@ namespace LicenseServer
 
             foreach (var item in ActivatedMachines)
             {
-                activationData.Add(new ActivationData() { IP = item.IP, Mid = item.Mid, Time = epoch.AddSeconds(item.Time) });
+                activationData.Add(new ActivationData() { IP = item.IP, Mid = item.Mid, Time = epoch.AddSeconds(item.Time), FriendlyName = item.FriendlyName, FloatingExpires = epoch.AddSeconds(item.FloatingExpires) });
             }
 
             return new LicenseKey
@@ -128,6 +128,15 @@ namespace LicenseServer
         public string IP { get; set; }
         public long Time { get; set; }
         public string FriendlyName { get; set; }
+    }
+
+    public class ActivationDataPIV3
+    {
+        public string Mid { get; set; }
+        public string FriendlyName { get; set; }
+        public string IP { get; set; }
+        public long Time { get; set; }
+        public long FloatingExpires { get; set; }
     }
 
 }

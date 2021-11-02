@@ -42,6 +42,7 @@ namespace LicenseServer
 
             var licenseKey = nvc.Get("Key");
             var machineCode = nvc.Get("MachineCode");
+            var friendlyName = nvc.Get("FriendlyName");
             int floatingTimeInterval = -1;
             int.TryParse(nvc.Get("FloatingTimeInterval"), out floatingTimeInterval);
 
@@ -86,7 +87,7 @@ namespace LicenseServer
                         activationData = activatedMachinesFloating.AddOrUpdate(key, x =>  new ConcurrentDictionary<string, ActivationData>(), (x, y) => y);
                     }
 
-                    if(method == APIMethod.GetKey)
+                    if (method == APIMethod.GetKey)
                     {
                         FloatingResult(result, null, null, context, 1, activationData.Values.Select(x => new ActivationData { Time = x.Time, FloatingExpires = x.FloatingExpires, FriendlyName = x.FriendlyName, IP = x.IP, Mid = x.Mid }).ToList());
                         return $"Floating license {licenseKey} returned successfully using a GetKey request. The data from the local license server is used.";
@@ -99,12 +100,14 @@ namespace LicenseServer
                     if(activation != null && activation.FloatingExpires >  DateTime.UtcNow)
                     {
                         activation.FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval);
+                        activation.FriendlyName = friendlyName;
+                        activation.IP = context.Request.RemoteEndPoint.ToString();
                         FloatingResult(result, activation, machineCode, context);
                         return $"Floating license {licenseKey} returned successfully.";
                     }
                     else if(activationData.Count(x=> x.Value.FloatingExpires > DateTime.UtcNow) < result.LicenseKey.MaxNoOfMachines)
                     {
-                        activation = activationData.AddOrUpdate(machineCode, x=> new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) }, (x,y) => new ActivationData { Mid = machineCode, Time = y.Time, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) });
+                        activation = activationData.AddOrUpdate(machineCode, x=> new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval), FriendlyName = friendlyName, IP = context.Request.RemoteEndPoint.ToString() }, (x,y) => new ActivationData { Mid = machineCode, Time = y.Time, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval), FriendlyName = friendlyName, IP = context.Request.RemoteEndPoint.ToString() });
 
                         FloatingResult(result, activation, machineCode, context);
                         return $"Floating license {licenseKey} returned successfully.";
@@ -120,7 +123,7 @@ namespace LicenseServer
                 }
                 else
                 {
-                    var activation = new ActivationData { Mid = machineCode, Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) };
+                    var activation = new ActivationData { Mid = machineCode, FriendlyName = friendlyName, IP = context.Request.RemoteEndPoint.ToString(), Time = DateTime.UtcNow, FloatingExpires = DateTime.UtcNow.AddSeconds(floatingTimeInterval) };
                     FloatingResult(result, activation, machineCode, context);
                     return $"Floating license {licenseKey} returned successfully.";
                 }
@@ -230,12 +233,12 @@ namespace LicenseServer
 
                 if (activations != null)
                 {
-                    licenseKeyToReturn.ActivatedMachines = activations.Select(x => new ActivationDataPI {  FriendlyName = x.FriendlyName, IP = x.IP, Time = ToUnixTimestamp(x.Time.Value), Mid = $"floating:{x.Mid}"}).ToList();
+                    licenseKeyToReturn.ActivatedMachines = activations.Select(x => new ActivationDataPIV3 {  FriendlyName = x.FriendlyName, IP = x.IP, Time = ToUnixTimestamp(x.Time.Value), Mid = $"floating:{x.Mid}", FloatingExpires = ToUnixTimestamp(x.FloatingExpires.Value)}).ToList();
                 }
                 else
                 {
-                    licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPI>() { new ActivationDataPI { Mid = $"floating:{machineCode}", Time =
-                          ToUnixTimestamp(activation.Time.Value)} };
+                    licenseKeyToReturn.ActivatedMachines = new List<ActivationDataPIV3>() { new ActivationDataPIV3 { Mid = $"floating:{machineCode}", Time =
+                          ToUnixTimestamp(activation.Time.Value), FriendlyName = activation.FriendlyName, IP = activation.IP, FloatingExpires = ToUnixTimestamp(activation.FloatingExpires.Value)  } };
                 }
 
                 licenseKeyToReturn.Block = result.LicenseKey.Block;
