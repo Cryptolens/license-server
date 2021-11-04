@@ -44,6 +44,11 @@ namespace LicenseServer
         public string ServerKey { get; set; }
         [Key(7)]
         public DateTimeOffset ValidUntil { get; set; }
+        [Key(8)]
+        public string PathToCacheFolder { get; set; }
+        [Key(9)]
+        public string WebAPILogAccessToken { get; set; }
+
     }
 
     [MessagePackObject]

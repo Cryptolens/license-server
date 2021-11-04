@@ -559,21 +559,32 @@ namespace LicenseServer
             }
         }
 
-        public static void UpdateLocalCache(ConcurrentDictionary<LAKey, string> keysToUpdate)
+        public static void UpdateLocalCache(ConcurrentDictionary<LAKey, string> keysToUpdate, string pathToCacheFolder = null)
         {
             var keysToSave = keysToUpdate.Keys.ToList();
 
-            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache")))
+            string path = "";
+
+            if (!string.IsNullOrWhiteSpace(pathToCacheFolder))
             {
-                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
+                path = Path.Combine(pathToCacheFolder, "cache");
+            }
+            else
+            {
+                path = Path.Combine(Directory.GetCurrentDirectory(), "cache");
             }
 
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            
             foreach (var key in keysToSave)
             {
                 string res = null;
                 if (keysToUpdate.TryRemove(key, out res))
                 {
-                    System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache", $"{key.ProductId}.{key.Key}.{key.SignMethod}.skm"), res);
+                    System.IO.File.WriteAllText(Path.Combine(path, $"{key.ProductId}.{key.Key}.{key.SignMethod}.skm"), res);
                 }
             }
         }
@@ -609,11 +620,27 @@ namespace LicenseServer
             }
         }
 
-        public static string LoadFromLocalCache(Dictionary<LAKey, LAResult> licenseCache, Action<string> updates)
+        public static string LoadFromLocalCache(Dictionary<LAKey, LAResult> licenseCache, Action<string> updates, string pathToCacheFolder = null)
         {
-            if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "cache"))) { return "Could not load the cache."; }
+            string path = "";
 
-            var files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "cache"));
+            if (!string.IsNullOrWhiteSpace(pathToCacheFolder))
+            {
+                path = Path.Combine(pathToCacheFolder, "cache");
+            }
+            else
+            {
+                path = Path.Combine(Directory.GetCurrentDirectory(), "cache");
+            }
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            if (!Directory.Exists(path)) { return "Could not load the cache."; }
+
+            var files = Directory.GetFiles(path);
 
             int filecount = 0;
             foreach (var file in files)
