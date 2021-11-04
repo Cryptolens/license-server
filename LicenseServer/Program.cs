@@ -72,6 +72,7 @@ namespace LicenseServer
         public static bool localFloatingServer = true;
         public static string RSAServerKey = "";
         public static string RSAPublicKey = "";
+        public static string pathToCacheFolder = "";
 
         public static DateTimeOffset? ConfigurationExpires = null;
 
@@ -125,6 +126,8 @@ namespace LicenseServer
 
                 RSAServerKey = config.ServerKey;
                 RSAPublicKey = config.RSAPublicKey;
+
+                pathToCacheFolder = config.PathToCacheFolder;
 
                 foreach (var file in config.ActivationFiles)
                 {
@@ -292,7 +295,7 @@ namespace LicenseServer
 
             if (cacheLength > 0)
             {
-                WriteMessage(Helpers.LoadFromLocalCache(licenseCache, WriteMessage));
+                WriteMessage(Helpers.LoadFromLocalCache(licenseCache, WriteMessage, pathToCacheFolder));
 
                 var tm = new System.Timers.Timer(3000);
                 tm.Elapsed += Tm_Elapsed;
@@ -314,7 +317,7 @@ namespace LicenseServer
 
         private static void Tm_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Helpers.UpdateLocalCache(keysToUpdate);
+            Helpers.UpdateLocalCache(keysToUpdate, pathToCacheFolder);
         }
 
         private static void DOSaver(object sender, System.Timers.ElapsedEventArgs e)
