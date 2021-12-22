@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.6 (2021-11-02)" ;
+        public const string versionInfo = "v2.7-preview (2021-12-22)" ;
 
         public const string ServiceName = "license-server";
 

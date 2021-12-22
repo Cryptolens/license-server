@@ -215,7 +215,15 @@ namespace LicenseServer
                         result.LicenseKey = resultObject.LicenseKey;
                     }
 
-                    licenseCache.Add(key, result);
+                    if(licenseCache.ContainsKey(key))
+                    {
+                        licenseCache[key] = result;
+                    }
+                    else
+                    {
+                        licenseCache.Add(key, result);
+                    }
+
                     keysToUpdate.AddOrUpdate(key, x => result.Response, (x, y) => result.Response);
 
                     return $"Added to the cache the license '{licenseKey}' and machine code '{machineCode}'.";
