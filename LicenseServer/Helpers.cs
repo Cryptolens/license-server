@@ -144,12 +144,20 @@ namespace LicenseServer
                     { 
                         if(ts.Days >= cacheLength)
                         {
-                            return $"Could not retrieve an updated license '{licenseKey}' and machine code '{machineCode}'.";
+                            if(method == APIMethod.GetKey)
+                                return $"Could not retrieve an updated license '{licenseKey}'.";
+                            else
+                                return $"Could not retrieve an updated license '{licenseKey}' and machine code '{machineCode}'.";
+
                         }
                         else if (attemptToRefresh)
                         {
                             ReturnResponse(result.Response, context);
-                            return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
+
+                            if(method == APIMethod.GetKey)
+                                return $"Retrieved cached version of the license '{licenseKey}'.";
+                            else
+                                return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
                         }
                     }
 
@@ -170,13 +178,19 @@ namespace LicenseServer
 
                     keysToUpdate.AddOrUpdate(key, x => result.Response, (x, y) => result.Response);
 
-                    return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
+                    if (method == APIMethod.GetKey)
+                        return $"Cache updated for license '{licenseKey}'.";
+                    else
+                        return $"Cache updated for license '{licenseKey}' and machine code '{machineCode}'.";
 
                 }
                 else
                 {
                     ReturnResponse(result.Response, context);
-                    return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
+                    if (method == APIMethod.GetKey)
+                        return $"Retrieved cached version of the license '{licenseKey}'.";
+                    else
+                        return $"Retrieved cached version of the license '{licenseKey}' and machine code '{machineCode}'.";
                 }
             }
             else
