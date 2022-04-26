@@ -201,9 +201,27 @@ namespace LicenseServer
                 {
                     result.Response = ForwardRequest(stream, newRequest, context);
                 }
+                catch (WebException ex)
+                {
+                    try
+                    {
+                        var output = ReadToByteArray(ex.Response.GetResponseStream());
+
+                        context.Response.OutputStream.Write(output, 0, output.Length);
+                        context.Response.KeepAlive = false;
+                        context.Response.Close();
+
+                        return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message}.";
+                    }
+                    catch (Exception ex2)
+                    {
+                        ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (api.cryptolens.io:443)." }), context);
+                        return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex2?.Message} and stack trace {ex2?.StackTrace}";
+                    }
+                }
                 catch (Exception ex)
                 {
-                    ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (app.cryptolens.io:443)." }), context);
+                    ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (api.cryptolens.io:443)." }), context);
                     return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message} and stack trace {ex?.StackTrace}";
                 }
 
@@ -513,6 +531,7 @@ namespace LicenseServer
 
         public static string ForwardRequest(byte[] originalStream, HttpWebRequest newRequest, HttpListenerContext context)
         {
+
             Stream reqStream = newRequest.GetRequestStream();
 
             reqStream.Write(originalStream, 0, originalStream.Length);
@@ -522,6 +541,7 @@ namespace LicenseServer
 
             context.Response.OutputStream.Write(output, 0, output.Length);
             context.Response.KeepAlive = false;
+            context.Response.ContentType = "application/json";
             context.Response.Close();
 
             return System.Text.Encoding.Default.GetString(output);
@@ -531,6 +551,7 @@ namespace LicenseServer
         {
             var output = System.Text.Encoding.UTF8.GetBytes(response);
             context.Response.OutputStream.Write(output, 0, output.Length);
+            context.Response.ContentType = "application/json";
             context.Response.KeepAlive = false;
             context.Response.Close();
         }

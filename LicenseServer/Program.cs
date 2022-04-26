@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.7-preview (2021-12-22)" ;
+        public const string versionInfo = "v2.7 (2022-04-26)" ;
 
         public const string ServiceName = "license-server";
 
@@ -78,9 +78,7 @@ namespace LicenseServer
 
         // A configuration can be generated on https://app.cryptolens.io/extensions/licenseserver
         // More instructions can be found here: https://github.com/Cryptolens/license-server/#floating-licenses-offline
-        public static string ConfigurationFromCryptolens = "ksUFW5jNH5DNAW3DkaxsaWNlbnNlZmlsZXPD2gGfPFJTQUtleVZhbHVlPjxNb2R1bHVzPnNHYnZ4d2RsRGJxRlhPTWxWVW5BRjVldzB0MFdwUFc3ckZwSTVqSFFPRmtodC8zMjZkdmg3dDc0UlllTXBqeTM1N05sam91aHBUTEEzYTZpZG5uNGo2YzNqbVBXQmtqWm5kR3NQTDRCcW0rZndFNDhuS3BHUGprajRxL3l6VDR0SFhCVHl2YUJqQThiVm9DVG51K0xpQzRYRWFMWlJUaEd6SW41S1FYS0NpZ2c2dFFSeTBHWEUxM1hZRlZ6L3gxbWpGYlQ5LzdkUzhwODVuOEJ1d2xZNUp2dUJJUWtLaHVDTkZmclV4Qld5dTg3Q0ZuWFdqSXVwQ0QyVk8vR2J4YUN2enJSakxaakFuZ0xDTXRaYllCQUxrc3FHUGdUVU43Wk0yNFhiUFd5THRLUGFYRjJpNFhSUjl1NmVUajVCZm5MYktBVTVQSVZmaklTK3ZOWVlvZ3RlUT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPtoDkzxSU0FLZXlWYWx1ZT48TW9kdWx1cz5zcWp4TzgwOXV0dmdTazc5RCt4NzBNZjhPNUlEZ0VsV3QwUkY0Znk0NVpKNkRpajl2UkxYU1JMSHpvZENvWGhFeVp4SDZQcjU2YnZrTHlsaUNiUkozWGhPU24yRmNPQ24vT0M5T1lJdjdScHBsRU9LMWM2c2hsRmQrbktMV3llOTZ5M0Q4Q3RZbU5MQkQrWnJpaCsrUVByK3ZjRW9aK3pWVTJBNVBlRGx1dHM9PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD4wSytQdG5FcEVhVDI2SVRxNjBDYW5wRXFsdVk3TnpRazBDVjNtd2h3TTJBVm5xOFM1RTY5NzByWkVSN00rWG4xRVJhdExvQU1IRkVjdEJVMHJBTlJ1dz09PC9QPjxRPjJ5cWlod0V6cDZoMlN4OHU4NUhtQ0hNZlNCdHFidWx4UFhMR096WE5BTXRUeFNEUncwTjJqRmNSbU93Nm8xeVNkbE83UFhvbWVKdG43bHNoaVRHWllRPT08L1E+PERQPmJDZnhSYzhVUis3RmdQRVNoK2F0dkN6a2M5elRKK05BaVJoQ0N2bXVuUkhaWXFxK0VkRzFvc1dhQnNOOTNIYVd5c3FENnl1Mkd4NzJ6MmFHSy9oMGJRPT08L0RQPjxEUT5QQ1VTSHh4OFVYbFFwVUwwZnBFK1lIay9UMmwrcHR0WFlUYWJJZXFjektmLzRDd21oSUNDQ3ZkbDgrSjRJUmFwZHVGNWsrQnVxRkIxa0JyZ05DY3hZUT09PC9EUT48SW52ZXJzZVE+b2ZJVnc3Mmxwem1rQlVmUkJJYVhRV29WZldkU0djeFVIdHFEUGc1SFJUVnZXQ3UxcElsT0pxMDBRVlc4VFZTS2tVV3ZiRGJpUGZWbUkzaHliVXBPM3c9PTwvSW52ZXJzZVE+PEQ+UXlpZGtlRExlUi9wRnBYTnEvdzE2TndjTlZwa1pZZHNDUFVwbmRNdHYrS0piaVE3aWFUNDkzZVBVMVBtR0tPSW5BN2F1em9JMHJOMkNjSnhIM3U5bmRtanRHLzFuQWhWRXhnN0R2a09oOU55K24yRFVtNlVtTDJwS1liSnVGNFVyeVEyMEZOSE12WEs5K2pUMEl1Ynhzc3JNYzZVMGFtTGtwZWwyMnhmU1NFPTwvRD48L1JTQUtleVZhbHVlPpLX/xNXkZBjYiw0AMUBAGIPD6Z1i5Ze9xVOHLDxFSa7JvDTvd7zld7LEQ5dCxtiezrjibT2Mo7PsWZd/ZEYZcBrwT0LtAEDkKvLUEWs0PCRLaMAflWHb4Zh+16uEYePYduU/4GxDhhDXxktzowX6EJA8KywsqrPUZgOgPijsjdHnqi63+PzGIhl7dBOphBuM2U441zh370PGIz0h58RZZh4CLGCcbCTNTHzEkBTT+eh4LT8g6GW5xfTVWAohRxUkMQr1zOoYCZm3hyhjmiNsPaXTdrOMSGvkoRzpBuxYhGaeaTl+fN0TJupuW+y+GPC6tp/0GOCFEvDIDxCbbajY0BpOQFWIxTR9PV0fXta7rU=";
-
-
+        public static string ConfigurationFromCryptolens = "Insert your configuration string here that can be obtained using the links above.";
         static void Main(string[] args)
         {
             if (!Environment.UserInteractive)
@@ -339,7 +337,7 @@ namespace LicenseServer
                         // adapted from https://stackoverflow.com/a/700307/1275924
                         var original = context.Request;
                         var pathAndQuery = new Uri(context.Request.Url.OriginalString).PathAndQuery;
-                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://app.cryptolens.io/" + pathAndQuery);
+                        HttpWebRequest newRequest = (HttpWebRequest)WebRequest.Create("https://api.cryptolens.io" + pathAndQuery);
 
                         newRequest.ContentType = original.ContentType;
                         newRequest.Method = original.HttpMethod;
