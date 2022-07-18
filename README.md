@@ -9,6 +9,14 @@
 
 ![](example.png)
 
+## Getting started
+Since v2.2, the license server needs to be compiled on your end to create the binaries. All the configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/licenseserver).
+
+The license server can be compiled on most operating systems and the process is as follows:
+
+### Install .NET
+
+
 ## Starting the server
 
 In order to launch the server, you need to run `LicenseServer.exe` as an administrator (you can download it [here](https://github.com/Cryptolens/license-server/releases)). The default port is 8080 but this can be changed.
