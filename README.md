@@ -10,12 +10,21 @@
 ![](example.png)
 
 ## Getting started
-Since v2.2, the license server needs to be compiled on your end to create the binaries. All the configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/licenseserver).
+Since v2.2, the license server needs to be compiled on your end to create the binaries. All the configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/licenseserver). In other words, there is no need to provider any arguments when calling the license server or use an external configuration file.
 
 The license server can be compiled on most operating systems and the process is as follows:
 
 ### Install .NET
+To install .NET, visit https://dotnet.microsoft.com/en-us/download/dotnet/6.0 and download the SDK (i.e. not the runtime).
 
+We also recommend to install an editor such as [Visual Studio Code](https://code.visualstudio.com/).
+
+### Configuring the server
+There are two steps involved:
+
+1. Visit [the configuration page](https://app.cryptolens.io/extensions/licenseserver). 
+
+### Building the 
 
 ## Starting the server
 
