@@ -17,8 +17,6 @@ The license server can be compiled on most operating systems and the process is 
 ### Install .NET
 To install .NET, visit https://dotnet.microsoft.com/en-us/download/dotnet/6.0 and download the SDK (i.e. not the runtime).
 
-We also recommend to install an editor such as [Visual Studio Code](https://code.visualstudio.com/).
-
 ### Configuring the server
 There are two steps involved:
 
