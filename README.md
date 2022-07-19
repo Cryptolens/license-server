@@ -10,7 +10,7 @@
 ![](example.png)
 
 ## Getting started
-Since v2.2, the license server needs to be compiled on your end to create the binaries. All the configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provider any arguments when calling the license server or use an external configuration file.
+Since v2.2, the license server needs to be compiled on your end to create the binaries. All configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provide any arguments when calling the license server or use an external configuration file.
 
 The license server can be compiled on most operating systems and the process is as follows:
 
@@ -20,7 +20,7 @@ To install .NET, visit https://dotnet.microsoft.com/en-us/download/dotnet/6.0 an
 ### Configuring the server
 There are two steps involved:
 
-1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will ensure that will make the server work in standard mode.
+1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will make the server work in standard mode.
 2. Copy the configuration string and paste it in the `ConfigurationFromCryptolens` variable in `Program.cs`.
 
 ### Building the server
@@ -49,7 +49,7 @@ For newer versions of the license server, you can [this configuration](https://a
 If you would like to run the license server as a service on Windows, you can accomplish that as described [here](#running-the-license-server-as-a-service).
 
 ### Running on Linux and Mac
-To run the license server on either Linux or Mac, you need to make sure that .NET 5 runtime is installed (read more [here](https://dotnet.microsoft.com/download/dotnet/5.0)). Once it is installed, the license server can be started as follows:
+To run the license server on either Linux or Mac, you need to make sure that .NET 5 runtime or later is installed (read more [here](https://dotnet.microsoft.com/download/dotnet/5.0)). Once it is installed, the license server can be started as follows:
 
 ```
 dotnet LicenseServer.dll
