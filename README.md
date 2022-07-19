@@ -143,6 +143,9 @@ When this is done, all usage information will be stored in the "usage" folder. T
 
 
 ### Loading settings from a config file
+
+> **Note** In newer versions of the license server, we recommend to create a [configuration string](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=True&LocalFloatingServer=False) as described in the beginning of this page.
+
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 
 ```
