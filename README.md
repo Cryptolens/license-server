@@ -9,6 +9,31 @@
 
 ![](example.png)
 
+## Getting started
+Since v2.2, the license server needs to be compiled on your end to create the binaries. All the configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provider any arguments when calling the license server or use an external configuration file.
+
+The license server can be compiled on most operating systems and the process is as follows:
+
+### Install .NET
+To install .NET, visit https://dotnet.microsoft.com/en-us/download/dotnet/6.0 and download the SDK (i.e. not the runtime).
+
+We also recommend to install an editor such as [Visual Studio Code](https://code.visualstudio.com/).
+
+### Configuring the server
+There are two steps involved:
+
+1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will ensure that will make the server work in standard mode.
+2. Copy the configuration string and paste it in the `ConfigurationFromCryptolens` variable in `Program.cs`.
+
+### Building the server
+To build the server, you can run the following command in the folder that contains the `LicenseServerCore.sln` file:
+
+```
+dotnet build LicenseServerCore.sln --configuration Release
+```
+
+From now on, you can use the instructions further down in this page to launch the executable.
+
 ## Starting the server
 
 In order to launch the server, you need to run `LicenseServer.exe` as an administrator (you can download it [here](https://github.com/Cryptolens/license-server/releases)). The default port is 8080 but this can be changed.
@@ -18,7 +43,7 @@ One way of doing it is to run CMD as an administrator and then type the command 
 C:\> LicenseServer.exe 5000
 ```
 
-You can also specify the port inside the application.
+For newer versions of the license server, you can [this configuration](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False&Port=5000) to set the port to 5000.
 
 > Please make sure to check that this port is open so that other computers in the network can access it (shown below).
 
@@ -62,16 +87,18 @@ As an example, to launch the server that caches licenses for 10 days, it can be 
 C:\> LicenseServer.exe 8080 10
 ```
 
+For newer versions of the license server, you can use [this configuration](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False&CacheLength=10&Port=8080) instead.
+
 #### Customers who are permanently offline
 The default behaviour of the server is to *always* attempt to get the latest copy of the license. However, if you know that the license server will not have access to the internet, it is better to enable the *offline mode* so that the license server always reads from cache.
 
-To enable offline mode, you can launch the server as follows:
+To enable offline mode, you can launch the server as follows (or use [this configuration string](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=True&LocalFloatingServer=False&CacheLength=10&Port=8080)):
 
 ```
 C:\> LicenseServer.exe 8080 10 work-offline
 ```
 
-In this case, it is a good idea to provide the license files (aka. activation files) that you want to load into the server. You only need to do it once or when the cache needs to be updated. If the license file (with a `.skm` extension) is in the *Downloads* folder, it can be loaded as follows:
+In this case, it is a good idea to provide the license files (aka. activation files) that you want to load into the server. You only need to do it once or when the cache needs to be updated. If the license file (with a `.skm` extension) is in the *Downloads* folder, it can be loaded as follows (or use [this configuration string](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=True&LocalFloatingServer=False&CacheLength=10&Port=8080&ActivationFileFolder=C:\Users\User%20Name\Downloads)):
 
 ```
 C:\> LicenseServer.exe 8080 10 work-offline "C:\Users\User Name\Downloads"
@@ -116,6 +143,9 @@ When this is done, all usage information will be stored in the "usage" folder. T
 
 
 ### Loading settings from a config file
+
+> **Note** In newer versions of the license server, we recommend to create a [configuration string](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=True&LocalFloatingServer=False) as described in the beginning of this page.
+
 To make it easier to deploy the license server on customer site, you can add all settings into `config.json` in the same folder as the server. The structure of the configuration file is shown below:
 
 ```
