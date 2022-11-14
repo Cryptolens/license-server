@@ -89,7 +89,7 @@ namespace LicenseServer
 
                     if (method == APIMethod.GetKey)
                     {
-                        FloatingResult(result, null, null, context, 1, activationData.Values.Select(x => new ActivationData { Time = x.Time, FloatingExpires = x.FloatingExpires, FriendlyName = x.FriendlyName, IP = x.IP, Mid = x.Mid }).ToList());
+                        FloatingResult(result, null, null, context, 1, activationData.Values.Where(x => x.FloatingExpires > DateTime.UtcNow).Select(x => new ActivationData { Time = x.Time, FloatingExpires = x.FloatingExpires, FriendlyName = x.FriendlyName, IP = x.IP, Mid = x.Mid }).ToList());
                         return $"Floating license {licenseKey} returned successfully using a GetKey request. The data from the local license server is used.";
                     }
 

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2019 - 2021 Cryptolens AB
+ * Copyright (c) 2019 - 2022 Cryptolens AB
  * To use the license server, a separate subscription is needed. 
  * Pricing information can be found on the following page: https://cryptolens.io/products/license-server/
  * */
@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.7 (2022-04-26)" ;
+        public const string versionInfo = "v2.8 (2022-11-14)" ;
 
         public const string ServiceName = "license-server";
 
