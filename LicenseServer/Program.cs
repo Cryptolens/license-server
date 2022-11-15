@@ -309,6 +309,14 @@ namespace LicenseServer
                 tm.Enabled = true;
             }
 
+            if(localFloatingServer)
+            {
+                var tm = new System.Timers.Timer(10000);
+                tm.Elapsed += FloatingMachineCleaner;
+                tm.AutoReset = true;
+                tm.Enabled = true;
+            }
+
             Thread responseThread = new Thread(ResponseThread);
             responseThread.Start(); // start the response thread
         }
@@ -321,6 +329,20 @@ namespace LicenseServer
         private static void DOSaver(object sender, System.Timers.ElapsedEventArgs e)
         {
             Helpers.SaveDOLogToFile();
+        }
+
+        private static void FloatingMachineCleaner(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            foreach (var key in activatedMachinesFloating.Keys)
+            {
+                var expiredMachines = activatedMachinesFloating[key].Where(x => x.Value.FloatingExpires < DateTime.UtcNow).Select(x => x.Value.Mid); 
+                
+                foreach (var machine in expiredMachines)
+                {
+                    ActivationData actData = null;
+                    activatedMachinesFloating[key].TryRemove(machine, out actData);
+                }
+            }
         }
 
         static void ResponseThread()
