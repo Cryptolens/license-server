@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.8 (2022-11-14)" ;
+        public const string versionInfo = "v2.9 (2022-11-15)" ;
 
         public const string ServiceName = "license-server";
 
@@ -387,6 +387,10 @@ namespace LicenseServer
                                 {
                                     WriteMessage(activateResponse);
                                 }
+                            }
+                            else if(method == APIMethod.Deactivate && localFloatingServer)
+                            {
+                                Helpers.ProcessDeactivateRequest(originalStream, newRequest, context, method, activatedMachinesFloating)
                             }
                             else if(method == APIMethod.IncrementIntValueToKey ||
                                     method == APIMethod.DecrementIntValueToKey)

@@ -341,6 +341,55 @@ namespace LicenseServer
             }
         }
 
+        public static string ProcessDeactivateRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context, APIMethod method, ConcurrentDictionary<LAKeyBase, ConcurrentDictionary<string, ActivationData>> activatedMachinesFloating)
+        {
+            string bodyParams = System.Text.Encoding.Default.GetString(stream);
+            var nvc = HttpUtility.ParseQueryString(bodyParams);
+
+            int productId = -1;
+            int.TryParse(nvc.Get("ProductId"), out productId);
+
+            var licenseKey = nvc.Get("Key");
+            int intValue = -1;
+            int.TryParse(nvc.Get("IntValue"), out intValue);
+
+            bool floatingOption = false;
+            bool.TryParse(nvc.Get("Floating"), out floatingOption);
+
+            var machineCode = nvc.Get("MachineCode");
+
+            if (floatingOption)
+            {
+                var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 1 };
+                var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 1 };
+
+                var machine = new ConcurrentDictionary<string, ActivationData>();
+                if (!activatedMachinesFloating.TryGetValue(key, out machine))
+                {
+                    activatedMachinesFloating.TryGetValue(keyAlt, out machine);
+                }
+
+                if (machine == null)
+                {
+                    ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Success }), context);
+                    return $"The license '{licenseKey}' and machine code '{machineCode}' were deactivated earlier or never activated.";
+                }
+                else
+                {
+                    var actData = new ActivationData();
+                    machine.TryRemove(machineCode, out actData);
+                }
+
+            }
+            else
+            {
+                // forward the request since 
+                ForwardRequest(stream, newRequest, context);
+            }
+
+            return null;
+        }
+
         public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context, APIMethod method)
         {
             string bodyParams = System.Text.Encoding.Default.GetString(stream);
@@ -399,14 +448,6 @@ namespace LicenseServer
             {
                 // for now, just forward the request.
                 ForwardRequest(stream, newRequest, context);
-
-                //try
-                //{
-                //}
-                //catch (Exception ex)
-                //{
-
-                //}
             }
 
 
