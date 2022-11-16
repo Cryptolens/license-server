@@ -380,6 +380,8 @@ namespace LicenseServer
                     machine.TryRemove(machineCode, out actData);
                 }
 
+                return $"The license '{licenseKey}' and machine code '{machineCode}' were deactivated successfully.";
+
             }
             else
             {
@@ -388,6 +390,7 @@ namespace LicenseServer
             }
 
             return null;
+
         }
 
         public static string ProcessIncrementDecrementValueRequest(byte[] stream, HttpWebRequest newRequest, HttpListenerContext context, APIMethod method)

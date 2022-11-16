@@ -390,7 +390,7 @@ namespace LicenseServer
                             }
                             else if(method == APIMethod.Deactivate && localFloatingServer)
                             {
-                                Helpers.ProcessDeactivateRequest(originalStream, newRequest, context, method, activatedMachinesFloating)
+                                WriteMessage(Helpers.ProcessDeactivateRequest(originalStream, newRequest, context, method, activatedMachinesFloating));
                             }
                             else if(method == APIMethod.IncrementIntValueToKey ||
                                     method == APIMethod.DecrementIntValueToKey)
