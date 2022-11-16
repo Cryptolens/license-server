@@ -138,7 +138,7 @@ var result = Key.Deactivate("", new DeactivateModel { ProductId = 3349, Key = "k
 To obtain the list of all activated floating machines, you can use the GetKey call:
 
 ```cs
-var result = Key.GetKey(token: "", productId: 3349, key: "", floatingTimeInterval: 150, LicenseServerUrl: "http://192.168.0.2:8080");
+var result = Key.GetKey(token: "", productId: 3349, key: "", LicenseServerUrl: "http://192.168.0.2:8080");
 
 // obtaining the license key (and verifying the signature automatically).
 var license = LicenseKey.FromResponse("RSAPubKey", result);
