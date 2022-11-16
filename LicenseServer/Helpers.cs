@@ -350,9 +350,7 @@ namespace LicenseServer
             int.TryParse(nvc.Get("ProductId"), out productId);
 
             var licenseKey = nvc.Get("Key");
-            int intValue = -1;
-            int.TryParse(nvc.Get("IntValue"), out intValue);
-
+  
             bool floatingOption = false;
             bool.TryParse(nvc.Get("Floating"), out floatingOption);
 
@@ -361,7 +359,7 @@ namespace LicenseServer
             if (floatingOption)
             {
                 var key = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 1 };
-                var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 1 };
+                var keyAlt = new LAKey { Key = licenseKey, ProductId = productId, SignMethod = 0 };
 
                 var machine = new ConcurrentDictionary<string, ActivationData>();
                 if (!activatedMachinesFloating.TryGetValue(key, out machine))
@@ -626,6 +624,11 @@ namespace LicenseServer
             if (path.ToLower().Replace("//", "/").Contains("/api/data/decrementintvaluetokey"))
             {
                 return APIMethod.DecrementIntValueToKey;
+            }
+
+            if (path.ToLower().Replace("//", "/").Contains("/api/key/deactivate"))
+            {
+                return APIMethod.Deactivate;
             }
 
             return APIMethod.Unknown;
