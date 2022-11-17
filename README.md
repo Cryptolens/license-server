@@ -122,12 +122,27 @@ If you want to use [floating licensing](https://help.cryptolens.io/licensing-mod
 
 ```cs
 // call to activate
-var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-GCMVD", machineCode: "foo");
+var result = Key.Activate(token: auth, productId: 3349, key: "GEBNC-WZZJD-VJIHG-GCMVD", machineCode: "foo", floatingTimeInterval: 150, LicenseServerUrl: "http://192.168.0.2:8080");
 
 // obtaining the license key (and verifying the signature automatically).
 var license = LicenseKey.FromResponse("RSAPubKey", result);
 ```
-> **Note** If the local license server is enabled, floating license status will not be synchronized with Cryptolens, even if online mode is enabled. Moreover, GetKey request will return the information stored on the local license server and sign it using the local license server's private key. This means that if you have enabled floating licensing offline, you need to use public key that was shown on the [configuration page](https://app.cryptolens.io/extensions/LicenseServer) for both `Activate` and `GetKey` requests. 
+> **Note** If the local license server is enabled, floating license status will not be synchronized with Cryptolens, even if online mode is enabled. Moreover, GetKey request will return the information stored on the local license server and sign it using the local license server's private key. This means that if you have enabled floating licensing offline, you need to use public key that was shown on the [configuration page](https://app.cryptolens.io/extensions/LicenseServer) for both `Activate` and `GetKey` requests.
+
+If you need to deactivate machine earlier, you can use the Deactivate method with `Floating=true`, similar to the way it would have been done when calling Cryptolens' Web API:
+
+```cs
+var result = Key.Deactivate("", new DeactivateModel { ProductId = 3349, Key = "key", MachineCode = "machine", LicenseServerUrl = "http://192.168.0.2:8080", Floating = true });
+```
+
+To obtain the list of all activated floating machines, you can use the GetKey call:
+
+```cs
+var result = Key.GetKey(token: "", productId: 3349, key: "", LicenseServerUrl: "http://192.168.0.2:8080");
+
+// obtaining the license key (and verifying the signature automatically).
+var license = LicenseKey.FromResponse("RSAPubKey", result);
+```
 
 ##### Usage-based licensing offline
 If the license server is set to work offline, it is still possible to collect information about usage (that is stored in data objects) and bill your clients for it.
