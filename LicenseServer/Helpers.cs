@@ -378,6 +378,7 @@ namespace LicenseServer
                     machine.TryRemove(machineCode, out actData);
                 }
 
+                ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Success }), context);
                 return $"The license '{licenseKey}' and machine code '{machineCode}' were deactivated successfully.";
 
             }
