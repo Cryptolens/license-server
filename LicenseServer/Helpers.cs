@@ -285,7 +285,7 @@ namespace LicenseServer
                 licenseKeyToReturn.Created = ToUnixTimestamp(result.LicenseKey.Created);
                 licenseKeyToReturn.Expires = ToUnixTimestamp(result.LicenseKey.Expires);
 
-                if (licenseKeyToReturn != null)
+                if (licenseKeyToReturn != null && result.LicenseKey.Customer != null)
                 {
                     licenseKeyToReturn.Customer = new CustomerPI { CompanyName = result.LicenseKey.Customer.CompanyName, Created = ToUnixTimestamp(result.LicenseKey.Customer.Created), Email = result.LicenseKey.Customer.Email, Id = result.LicenseKey.Customer.Id, Name = result.LicenseKey.Customer.Name };
                 }
