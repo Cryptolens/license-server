@@ -276,7 +276,9 @@ namespace LicenseServer
             }
             catch (Exception ex)
             {
-                WriteMessage($"Error: Please make sure that the license server runs as an administrator and that there is no other application that is listening to port {port}.\n\nDetailed error shown below: {ex.StackTrace.ToString()}");
+                WriteMessage($"Error: Please make sure that the license server runs as an administrator" +
+                    $"and that there is no other application that is listening to port {port}.\n\n" +
+                    $"Detailed error shown below: {ex.StackTrace.ToString()}");
                 Console.ReadLine();
                 return;
             }
