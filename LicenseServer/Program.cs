@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2019 - 2022 Cryptolens AB
+ * Copyright (c) 2019 - 2023 Cryptolens AB
  * To use the license server, a separate subscription is needed. 
  * Pricing information can be found on the following page: https://cryptolens.io/products/license-server/
  * */
@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.11 (2023-01-17)" ;
+        public const string versionInfo = "v2.11 (2023-03-02)" ;
 
         public const string ServiceName = "license-server";
 
@@ -276,7 +276,7 @@ namespace LicenseServer
             }
             catch (Exception ex)
             {
-                WriteMessage("Error: Please run the license server as an administrator.\n\nDetailed error shown below: " + ex.StackTrace.ToString());
+                WriteMessage($"Error: Please make sure that the license server runs as an administrator and that there is no other application that is listening to port {port}.\n\nDetailed error shown below: {ex.StackTrace.ToString()}");
                 Console.ReadLine();
                 return;
             }
