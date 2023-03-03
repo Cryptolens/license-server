@@ -211,18 +211,18 @@ namespace LicenseServer
                         context.Response.KeepAlive = false;
                         context.Response.Close();
 
-                        return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message}.";
+                        return $"Could not contact the server (api.cryptolens.io:443) for license '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message}.";
                     }
                     catch (Exception ex2)
                     {
                         ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (api.cryptolens.io:443)." }), context);
-                        return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex2?.Message} and stack trace {ex2?.StackTrace}";
+                        return $"Could not contact the server (api.cryptolens.io:443) for license '{licenseKey}' and machine code '{machineCode}'. Error message {ex2?.Message} and stack trace {ex2?.StackTrace}";
                     }
                 }
                 catch (Exception ex)
                 {
                     ReturnResponse(JsonConvert.SerializeObject(new BasicResult { Result = ResultType.Error, Message = "Could not contact the central sever (api.cryptolens.io:443)." }), context);
-                    return $"Could not contact the server '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message} and stack trace {ex?.StackTrace}";
+                    return $"Could not contact the server (api.cryptolens.io:443) for license '{licenseKey}' and machine code '{machineCode}'. Error message {ex?.Message} and stack trace {ex?.StackTrace}";
                 }
 
                 if (cacheLength > 0)
