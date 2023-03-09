@@ -142,7 +142,7 @@ namespace LicenseServer
                         var configData = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText(config.PathToConfigFile));
 
                         port = configData.Port;
-                        WriteMessage($"Port changed to {port}");
+                        WriteMessage($"Port changed to {port}.");
 
                     }
                     catch (Exception ex)
