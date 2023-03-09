@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.11 (2023-03-02)" ;
+        public const string versionInfo = "v2.11 (2023-03-09)" ;
 
         public const string ServiceName = "license-server";
 
@@ -134,6 +134,22 @@ namespace LicenseServer
                 }
 
                 ConfigurationExpires = config.ValidUntil;
+
+                if (!string.IsNullOrWhiteSpace(config.PathToConfigFile))
+                {
+                    try 
+                    {
+                        var configData = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText(config.PathToConfigFile));
+
+                        port = configData.Port;
+                        WriteMessage($"Port changed to {port}");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage($"Config file {config.PathToConfigFile} could not be read. Detailed error message {ex.Message}");
+                    }
+                }
             }
             else
             {

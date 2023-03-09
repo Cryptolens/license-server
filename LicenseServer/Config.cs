@@ -48,6 +48,8 @@ namespace LicenseServer
         public string PathToCacheFolder { get; set; }
         [Key(9)]
         public string WebAPILogAccessToken { get; set; }
+        [Key(10)]
+        public string PathToConfigFile { get; set; }
 
     }
 
