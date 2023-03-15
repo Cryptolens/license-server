@@ -22,7 +22,7 @@ There are two steps involved:
 
 1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will make the server work in standard mode.
 2. Copy the configuration string and paste it in the `ConfigurationFromCryptolens` variable in `Program.cs`.
-3. Environment variables can also be used to store configuration data. Please read more [here](alternative-ways-to-configure-the-server).
+3. Environment variables can also be used to store configuration data. Please read more [here](#alternative-ways-to-configure-the-server).
 
 Later in this tutorial, there are examples of calling the license server using command line arguments. We recommend to use the configuration string as described in (1) if possible. If you have any questions, please reach out to us at support@cryptolens.io.
 
