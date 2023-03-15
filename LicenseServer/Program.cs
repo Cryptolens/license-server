@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.11 (2023-03-09)" ;
+        public const string versionInfo = "v2.12-rc (2023-03-15)" ;
 
         public const string ServiceName = "license-server";
 
@@ -103,8 +103,17 @@ namespace LicenseServer
 
                 if (config == null)
                 {
-                    WriteMessage($"Configuration data could not be read.");
-                    return;
+                    WriteMessage($"Configuration data could not be read. Attempting to read environment variables.");
+
+                    config = Helpers.ReadFromEnvironmentVariables(null);
+                }
+                else
+                {
+                    if (config.PathToConfigFile == "USE_ENVIRONMENT_VARIABLES")
+                    {
+                        WriteMessage("Attempting to read environment variables.");
+                        config = Helpers.ReadFromEnvironmentVariables(config);
+                    }
                 }
 
                 if (config.ValidUntil < DateTimeOffset.UtcNow)
@@ -127,10 +136,13 @@ namespace LicenseServer
 
                 pathToCacheFolder = config.PathToCacheFolder;
 
-                foreach (var file in config.ActivationFiles)
+                if (config.ActivationFiles != null)
                 {
-                    string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
-                    WriteMessage($"Path '{file}' {result}");
+                    foreach (var file in config.ActivationFiles)
+                    {
+                        string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                        WriteMessage($"Path '{file}' {result}");
+                    }
                 }
 
                 ConfigurationExpires = config.ValidUntil;
@@ -141,8 +153,20 @@ namespace LicenseServer
                     {
                         var configData = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText(config.PathToConfigFile));
 
-                        port = configData.Port;
-                        WriteMessage($"Port changed to {port}.");
+                        if (configData.Port != 0)
+                        {
+                            port = configData.Port;
+                            WriteMessage($"Port changed to {port}.");
+                        }
+
+                        if(configData.ActivationFiles != null)
+                        {
+                            foreach (var file in config.ActivationFiles)
+                            {
+                                string result = Helpers.LoadLicenseFromPath(licenseCache, keysToUpdate, file, WriteMessage) ? "Processed" : "Error";
+                                WriteMessage($"Path '{file}' {result}");
+                            }
+                        }
 
                     }
                     catch (Exception ex)
@@ -153,7 +177,6 @@ namespace LicenseServer
             }
             else
             {
-
                 try
                 {
                     var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));

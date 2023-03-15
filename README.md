@@ -22,6 +22,9 @@ There are two steps involved:
 
 1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will make the server work in standard mode.
 2. Copy the configuration string and paste it in the `ConfigurationFromCryptolens` variable in `Program.cs`.
+3. Environment variables can also be used to store configuration data. Please read more [here](alternative-ways-to-configure-the-server).
+
+Later in this tutorial, there are examples of calling the license server using command line arguments. We recommend to use the configuration string as described in (1) if possible. If you have any questions, please reach out to us at support@cryptolens.io.
 
 ### Building the server
 To build the server, you can run the following command in the folder that contains the `LicenseServerCore.sln` file:
@@ -193,4 +196,23 @@ sc delete  license-server
 ```
 
 If you need any help, please let us know at support@cryptolens.io.
+
+### Alternative ways to configure the server
+
+It is also possible to configure the license server using environment variables. For now, the license server will only read the environment variables in two cases:
+
+1. If the `ConfigurationFromCryptolens` in Program.cs is not null or empty.
+2. If license server runs as a service (Windows).
+
+For example, if you prefer to use the environment variables, you can set `ConfigurationFromCryptolens` to any string value and then rely on the environment variables. Alternatively, you can create a configuration string at https://app.cryptolens.io/extensions/licenseserver and then set "path to config file" to `USE_ENVIRONMENT_VARIABLES`.
+
+Cryptolens uses the following environment variables:
+
+| Name   | Description      |
+|----------|-------------|
+| `cryptolens_offlinemode` | Specifies if the license server should contact the central server (if set to false) or rely on the cached version if such exists (if set to true). When set to true, the license server will at first try the cache before attempting to contact the license server. |
+| `cryptolens_port` | The port to use|
+| `cryptolens_activationfilefolder` | The path to the folder with activation files. Please set it to an absolute path when running the license server as a service |
+| `cryptolens_cachelength` | The amount of days until a new license file should be obtained. |
+| `cryptolens_pathtoconfigfile` | The path to the configuration file. This can be useful if you anticipate that your clients might need to change certain properties more often, and then it may be easier to change the file rather than restarting the machine (which is often required for the environment variables to take effect). For now, you can set the port and the folder to the activation files.|
 

@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using System.Web;
 
 using MessagePack;
+using System.ComponentModel;
 
 namespace LicenseServer
 {
@@ -835,6 +836,52 @@ namespace LicenseServer
             catch(Exception ex) { return null; }
 
             return null;
+        }
+
+        public static LicenseServerConfiguration ReadFromEnvironmentVariables(LicenseServerConfiguration config)
+        {
+            var lsc = new LicenseServerConfiguration();
+            if(config != null)
+            {
+                lsc = config;
+            }
+
+            var offlineMode = false;
+            if (bool.TryParse(Environment.GetEnvironmentVariable("cryptolens_offlinemode"), out offlineMode))
+            {
+                lsc.OfflineMode = offlineMode;
+            }
+
+            var port = 0;
+            if (int.TryParse(Environment.GetEnvironmentVariable("cryptolens_port"), out port))
+            {
+                lsc.Port = port;
+            }
+
+            var activationFileFolder = Environment.GetEnvironmentVariable("cryptolens_activationfilefolder");
+            if (!string.IsNullOrEmpty(activationFileFolder))
+            {
+                lsc.ActivationFiles = new List<string> { activationFileFolder };
+            }
+
+            var configFilePath = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
+            if (!string.IsNullOrEmpty(configFilePath))
+            {
+                lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
+            }
+
+            var cacheLength = 0;
+            if (int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength))
+            {
+                lsc.CacheLength = cacheLength;
+            }
+
+            if (config == null)
+            {
+                lsc.ValidUntil = DateTime.MaxValue;
+            }
+
+            return lsc;
         }
     }
 
