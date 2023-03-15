@@ -859,13 +859,13 @@ namespace LicenseServer
             }
 
             var activationFileFolder = Environment.GetEnvironmentVariable("cryptolens_activationfilefolder");
-            if (activationFileFolder != null)
+            if (!string.IsNullOrEmpty(activationFileFolder))
             {
                 lsc.ActivationFiles = new List<string> { activationFileFolder };
             }
 
             var configFilePath = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
-            if (configFilePath != null)
+            if (!string.IsNullOrEmpty(configFilePath))
             {
                 lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
             }
