@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.11 (2023-03-09)" ;
+        public const string versionInfo = "v2.12 (2023-03-16)" ;
 
         public const string ServiceName = "license-server";
 
@@ -103,8 +103,17 @@ namespace LicenseServer
 
                 if (config == null)
                 {
-                    WriteMessage($"Configuration data could not be read.");
-                    return;
+                    WriteMessage($"Configuration data could not be read. Attempting to read environment variables.");
+
+                    config = Helpers.ReadFromEnvironmentVariables();
+                }
+                else
+                {
+                    if (config.PathToConfigFile == "USE_ENVIRONMENT_VARIABLES")
+                    {
+                        WriteMessage("Attempting to read environment variables.");
+                        config = Helpers.ReadFromEnvironmentVariables();
+                    }
                 }
 
                 if (config.ValidUntil < DateTimeOffset.UtcNow)
@@ -141,8 +150,11 @@ namespace LicenseServer
                     {
                         var configData = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText(config.PathToConfigFile));
 
-                        port = configData.Port;
-                        WriteMessage($"Port changed to {port}.");
+                        if (configData.Port != 0)
+                        {
+                            port = configData.Port;
+                            WriteMessage($"Port changed to {port}.");
+                        }
 
                     }
                     catch (Exception ex)

@@ -845,7 +845,7 @@ namespace LicenseServer
             bool.TryParse(Environment.GetEnvironmentVariable("cryptolens_offlinemode"), out offlineMode);
             lsc.OfflineMode = offlineMode;
 
-            var port = -1;
+            var port = 0;
             int.TryParse(Environment.GetEnvironmentVariable("cryptolens_port"), out port);
             lsc.Port = port;
 
@@ -858,6 +858,8 @@ namespace LicenseServer
             var cacheLength = -1;
             int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength);
             lsc.CacheLength = cacheLength;
+
+            lsc.ValidUntil = DateTime.MaxValue;
 
             return lsc;
         }
