@@ -836,6 +836,31 @@ namespace LicenseServer
 
             return null;
         }
+
+        public static LicenseServerConfiguration ReadFromEnvironmentVariables()
+        {
+            var lsc = new LicenseServerConfiguration();
+
+            var offlineMode = false;
+            bool.TryParse(Environment.GetEnvironmentVariable("cryptolens_offlinemode"), out offlineMode);
+            lsc.OfflineMode = offlineMode;
+
+            var port = -1;
+            int.TryParse(Environment.GetEnvironmentVariable("cryptolens_port"), out port);
+            lsc.Port = port;
+
+            var activationFileFolder = Environment.GetEnvironmentVariable("cryptolens_activationfilefolder");
+            lsc.ActivationFiles = new List<string> { activationFileFolder };
+
+            var configFilePath = Environment.GetEnvironmentVariable("cryptolens_configfilepath");
+            lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfolder");
+
+            var cacheLength = -1;
+            int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength);
+            lsc.CacheLength = cacheLength;
+
+            return lsc;
+        }
     }
 
     public enum APIMethod
