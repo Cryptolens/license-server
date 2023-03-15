@@ -855,10 +855,10 @@ namespace LicenseServer
                 lsc.ActivationFiles = new List<string> { activationFileFolder };
             }
 
-            var configFilePath = Environment.GetEnvironmentVariable("cryptolens_configfilepath");
+            var configFilePath = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
             if (configFilePath != null)
             {
-                lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfolder");
+                lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
             }
 
             var cacheLength = 0;
