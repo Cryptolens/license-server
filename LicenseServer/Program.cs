@@ -105,14 +105,14 @@ namespace LicenseServer
                 {
                     WriteMessage($"Configuration data could not be read. Attempting to read environment variables.");
 
-                    config = Helpers.ReadFromEnvironmentVariables();
+                    config = Helpers.ReadFromEnvironmentVariables(null);
                 }
                 else
                 {
                     if (config.PathToConfigFile == "USE_ENVIRONMENT_VARIABLES")
                     {
                         WriteMessage("Attempting to read environment variables.");
-                        config = Helpers.ReadFromEnvironmentVariables();
+                        config = Helpers.ReadFromEnvironmentVariables(config);
                     }
                 }
 

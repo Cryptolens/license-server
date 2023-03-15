@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using System.Web;
 
 using MessagePack;
+using System.ComponentModel;
 
 namespace LicenseServer
 {
@@ -837,17 +838,25 @@ namespace LicenseServer
             return null;
         }
 
-        public static LicenseServerConfiguration ReadFromEnvironmentVariables()
+        public static LicenseServerConfiguration ReadFromEnvironmentVariables(LicenseServerConfiguration config)
         {
             var lsc = new LicenseServerConfiguration();
+            if(config != null)
+            {
+                lsc = config;
+            }
 
             var offlineMode = false;
-            bool.TryParse(Environment.GetEnvironmentVariable("cryptolens_offlinemode"), out offlineMode);
-            lsc.OfflineMode = offlineMode;
+            if (bool.TryParse(Environment.GetEnvironmentVariable("cryptolens_offlinemode"), out offlineMode))
+            {
+                lsc.OfflineMode = offlineMode;
+            }
 
             var port = 0;
-            int.TryParse(Environment.GetEnvironmentVariable("cryptolens_port"), out port);
-            lsc.Port = port;
+            if (int.TryParse(Environment.GetEnvironmentVariable("cryptolens_port"), out port))
+            {
+                lsc.Port = port;
+            }
 
             var activationFileFolder = Environment.GetEnvironmentVariable("cryptolens_activationfilefolder");
             if (activationFileFolder != null)
@@ -862,10 +871,15 @@ namespace LicenseServer
             }
 
             var cacheLength = 0;
-            int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength);
-            lsc.CacheLength = cacheLength;
+            if (int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength))
+            {
+                lsc.CacheLength = cacheLength;
+            }
 
-            lsc.ValidUntil = DateTime.MaxValue;
+            if (config == null)
+            {
+                lsc.ValidUntil = DateTime.MaxValue;
+            }
 
             return lsc;
         }
