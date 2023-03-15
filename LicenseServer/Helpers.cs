@@ -850,12 +850,18 @@ namespace LicenseServer
             lsc.Port = port;
 
             var activationFileFolder = Environment.GetEnvironmentVariable("cryptolens_activationfilefolder");
-            lsc.ActivationFiles = new List<string> { activationFileFolder };
+            if (activationFileFolder != null)
+            {
+                lsc.ActivationFiles = new List<string> { activationFileFolder };
+            }
 
             var configFilePath = Environment.GetEnvironmentVariable("cryptolens_configfilepath");
-            lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfolder");
+            if (configFilePath != null)
+            {
+                lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfolder");
+            }
 
-            var cacheLength = -1;
+            var cacheLength = 0;
             int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength);
             lsc.CacheLength = cacheLength;
 
