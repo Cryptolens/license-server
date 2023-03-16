@@ -220,8 +220,9 @@ Cryptolens uses the following environment variables:
 |----------|-------------|
 | `cryptolens_offlinemode` | Specifies if the license server should contact the central server (if set to false) or rely on the cached version if such exists (if set to true). When set to true, the license server will at first try the cache before attempting to contact the license server. |
 | `cryptolens_port` | The port to use. |
-| `cryptolens_activationfilefolder` | The path to the folder with activation files. Please set it to an absolute path when running the license server as a service |
+| `cryptolens_activationfilefolder` | The path to the folder with activation files. Please set it to an absolute path when running the license server as a service. |
 | `cryptolens_cachelength` | The amount of days until a new license file should be obtained. |
-| `cryptolens_pathtoconfigfile` | The path to the configuration file. This can be useful if you anticipate that your clients might need to change certain properties more often, and then it may be easier to change the file rather than restarting the machine (which is often required for the environment variables to take effect). For now, you can set the port and the folder to the activation files.|
-| `cryptolens_cachefolder` | Path to the cache folder |
+| `cryptolens_pathtoconfigfile` | The path to the configuration file. This can be useful if you anticipate that your clients might need to change certain properties more often, and then it may be easier to change the file rather than restarting the machine (which is often required for the environment variables to take effect). For now, you can set the port and the folder to the activation files. If you plan to run the server as a service, please set this to absolute path.|
+| `cryptolens_cachefolder` | Path to the cache folder. If you plan to run the server as a service, please set this to absolute path. |
 
+> **Note**: when running the license server as a service, all paths to files and folders need to be **absolute**. More on that in [this section](#running-the-license server-as-a-service).
