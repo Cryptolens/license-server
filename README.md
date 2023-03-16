@@ -10,7 +10,7 @@
 ![](example.png)
 
 ## Getting started
-Since v2.12-rc, there are two ways you can configure the server. Either, you use the pre-built version of the server with default values or you use the configuration string from [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) and build the server on your end.
+Since v2.12-rc, there are two ways you can configure the server. Either, you can use the pre-built version of the server with default values or you can use the configuration string from [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) and build the server on your end.
 
 ### Using the pre-built license server
 If you do not plan to use the **local floating license server** capability (which requires the server to be built on your end), you can use one of our pre-built binaries.
