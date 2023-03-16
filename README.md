@@ -10,30 +10,38 @@
 ![](example.png)
 
 ## Getting started
-Since v2.2, the license server needs to be compiled on your end to create the binaries. All configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provide any arguments when calling the license server or use an external configuration file.
+Since v2.12-rc, there are two ways you can configure the server. Either, you use the pre-built version of the server with default values or you use the configuration string from [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) and build the server on your end.
+
+### Using the pre-built license server
+If you do not plan to use the **local floating license server** capability (which requires the server to be built on your end), you can use one of our pre-built binaries.
+
+When you use the binaries, you can either store the configuration in the config file (as we describe later) or configure the server using environment variables (read more [here](#alternative-ways-to-configure-the-server)). Please keep in mind that the license server will **only read the environment variables** if you run it as a service.
+
+### Building the server yourself
+If you need the local floating license capability, the license server needs to be compiled on your end to create the binaries. All configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provide any arguments when calling the license server or use an external configuration file.
 
 The license server can be compiled on most operating systems and the process is as follows:
 
-### Install .NET
+#### Install .NET
 To install .NET, visit https://dotnet.microsoft.com/en-us/download/dotnet/6.0 and download the SDK (i.e. not the runtime).
 
-### Configuring the server
-There are two steps involved:
+#### Configuring the server
+There are three steps involved:
 
 1. Visit [the configuration page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) to create a configuration that will make the server work in standard mode.
 2. Copy the configuration string and paste it in the `ConfigurationFromCryptolens` variable in `Program.cs`.
-3. Environment variables can also be used to store configuration data. Please read more [here](#alternative-ways-to-configure-the-server).
+3. Environment variables can also be used to change configuration data for a specific user. Please read more [here](#alternative-ways-to-configure-the-server).
 
 Later in this tutorial, there are examples of calling the license server using command line arguments. We recommend to use the configuration string as described in (1) if possible. If you have any questions, please reach out to us at support@cryptolens.io.
 
-### Building the server
+#### Building the server
 To build the server, you can run the following command in the folder that contains the `LicenseServerCore.sln` file:
 
 ```
 dotnet build LicenseServerCore.sln --configuration Release
 ```
 
-From now on, you can use the instructions further down in this page to launch the executable.
+From now on, you can use the instructions further down on this page to launch the executable.
 
 ## Starting the server
 
