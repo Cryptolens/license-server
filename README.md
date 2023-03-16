@@ -215,4 +215,5 @@ Cryptolens uses the following environment variables:
 | `cryptolens_activationfilefolder` | The path to the folder with activation files. Please set it to an absolute path when running the license server as a service |
 | `cryptolens_cachelength` | The amount of days until a new license file should be obtained. |
 | `cryptolens_pathtoconfigfile` | The path to the configuration file. This can be useful if you anticipate that your clients might need to change certain properties more often, and then it may be easier to change the file rather than restarting the machine (which is often required for the environment variables to take effect). For now, you can set the port and the folder to the activation files.|
+| `cryptolens_cachefolder` | Path to the cache folder |
 

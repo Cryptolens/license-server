@@ -870,6 +870,12 @@ namespace LicenseServer
                 lsc.PathToConfigFile = Environment.GetEnvironmentVariable("cryptolens_pathtoconfigfile");
             }
 
+            var cacheFolderPath = Environment.GetEnvironmentVariable("cryptolens_cachefolder");
+            if (!string.IsNullOrEmpty(cacheFolderPath))
+            {
+                lsc.PathToCacheFolder = Environment.GetEnvironmentVariable("cryptolens_cachefolder");
+            }
+
             var cacheLength = 0;
             if (int.TryParse(Environment.GetEnvironmentVariable("cryptolens_cachelength"), out cacheLength))
             {

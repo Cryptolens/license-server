@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.12-rc (2023-03-15)" ;
+        public const string versionInfo = "v2.12-rc (2023-03-16)" ;
 
         public const string ServiceName = "license-server";
 
@@ -78,7 +78,7 @@ namespace LicenseServer
 
         // A configuration can be generated on https://app.cryptolens.io/extensions/licenseserver
         // More instructions can be found here: https://github.com/Cryptolens/license-server/#floating-licenses-offline
-        public static string ConfigurationFromCryptolens = "Insert your configuration string here that can be obtained using the links above.";
+        public static string ConfigurationFromCryptolens = "";
         static void Main(string[] args)
         {
             if (!Environment.UserInteractive)
@@ -167,7 +167,6 @@ namespace LicenseServer
                                 WriteMessage($"Path '{file}' {result}");
                             }
                         }
-
                     }
                     catch (Exception ex)
                     {
