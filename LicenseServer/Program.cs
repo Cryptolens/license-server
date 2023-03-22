@@ -29,7 +29,7 @@ namespace LicenseServer
 {
     class Program
     {
-        public const string versionInfo = "v2.12-rc (2023-03-16)" ;
+        public const string versionInfo = "v2.12-rc2 (2023-03-22)" ;
 
         public const string ServiceName = "license-server";
 
@@ -97,9 +97,20 @@ namespace LicenseServer
         {
             Console.WriteLine($"Cryptolens License Server {versionInfo}\n");
 
-            if (!string.IsNullOrEmpty(ConfigurationFromCryptolens) || runAsService)
+            var envconfigstring = System.Environment.GetEnvironmentVariable("cryptolens_configurationstring");
+
+            if (!string.IsNullOrEmpty(ConfigurationFromCryptolens) || runAsService || !string.IsNullOrEmpty(envconfigstring))
             {
-                var config = Helpers.ReadConfiguration(ConfigurationFromCryptolens);
+                LicenseServerConfiguration config = null;
+
+                if (string.IsNullOrEmpty(ConfigurationFromCryptolens) && !string.IsNullOrEmpty(envconfigstring))
+                {
+                    config = Helpers.ReadConfiguration(envconfigstring, Constants.RSAPubKey);
+                }
+                else
+                {
+                    config = Helpers.ReadConfiguration(ConfigurationFromCryptolens);
+                }
 
                 if (config == null)
                 {
@@ -176,6 +187,8 @@ namespace LicenseServer
             }
             else
             {
+
+
                 try
                 {
                     var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText((Path.Combine(Directory.GetCurrentDirectory(), "config.json"))));

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2019 - 2021 Cryptolens AB
+ * Copyright (c) 2019 - 2023 Cryptolens AB
  * To use the license server, a separate subscription is needed. 
  * Pricing information can be found on the following page: https://cryptolens.io/products/license-server/
  * 
@@ -60,5 +60,10 @@ namespace LicenseServer
         public byte[] LSC { get; set; }
         [Key(1)]
         public byte[] Signature { get; set; }
+    }
+
+    public class Constants
+    {
+        public static string RSAPubKey = "<RSAKeyValue><Modulus>0l10Tgew1flcPcjt6R8ciWSRRG80zAdfz2+brNbYTxocqFYrQEELx9H0WWcyF9dh0M6OuY5nwjUh7dmJUcJyP56NMd8+1ozj7yUMckltJbRVwJVvVVhUoDRIn7jIfQuJKdXWpvXxCXlw9/WkoJMVYvKAGMvoBIb5BLbB3KT0DxjS3TXmymMTZYLWyBF4VxD53JQezX6r4wBEK9HFGw5aos3J585VeM3/SnUL6RL8MvmrOp/W/4iJJ5TvS/XXz/Kdr6Nmgm3jn6YO+IJ9mkdfd/nuqh8MTeP/Z8+nxEfI0rGx6LQyjwkr1Dyx6ILtns+YVpfG8af1EcPVXvxF+eLYhQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
     }
 }
