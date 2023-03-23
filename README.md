@@ -13,12 +13,12 @@
 Since v2.12-rc, there are two ways you can configure the server. Either, you can use the [pre-built version](https://github.com/Cryptolens/license-server/releases) of the server with default values or you can use the configuration string from [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False) and build the server on your end.
 
 ### Using the pre-built license server
-If you do not plan to use the **local floating license server** capability (which requires the server to be built on your end), you can use our [pre-built binaries](https://github.com/Cryptolens/license-server/releases).
+You can use our [pre-built binaries](https://github.com/Cryptolens/license-server/releases) for all use cases (including the **local floating license server** feature or if you have the ability to set environment variables).
 
 When you use the binaries, you can either store the configuration in the config file (as we describe later) or configure the server using environment variables (read more [here](#alternative-ways-to-configure-the-server)). Please keep in mind that the license server will **only read the environment variables** if you run it as a service.
 
 ### Building the server yourself
-If you need the local floating license capability, the license server needs to be compiled on your end to create the binaries. All configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provide any arguments when calling the license server or use an external configuration file.
+If you need the local floating license server and cannot use environment variables as described [here](#alternative-ways-to-configure-the-server), the license server needs to be compiled on your end to create the binaries. All configuration is stored inside the `ConfigurationFromCryptolens` variable in `Program.cs`, which can be created on [this page](https://app.cryptolens.io/extensions/LicenseServer?OfflineMode=False&LocalFloatingServer=False). In other words, there is no need to provide any arguments when calling the license server or use an external configuration file.
 
 The license server can be compiled on most operating systems and the process is as follows:
 
@@ -224,5 +224,6 @@ Cryptolens uses the following environment variables:
 | `cryptolens_cachelength` | The amount of days until a new license file should be obtained. |
 | `cryptolens_pathtoconfigfile` | The path to the configuration file. This can be useful if you anticipate that your clients might need to change certain properties more often, and then it may be easier to change the file rather than restarting the machine (which is often required for the environment variables to take effect). For now, you can set the port and the folder to the activation files. If you plan to run the server as a service, please set this to absolute path.|
 | `cryptolens_cachefolder` | Path to the cache folder. If you plan to run the server as a service, please set this to absolute path. |
+| `cryptolens_configurationstring` | An optional parameter that you can use to provide the configuration string that would normally need to be added in the code. |
 
 > **Note**: when running the license server as a service, all paths to files and folders need to be **absolute**.
