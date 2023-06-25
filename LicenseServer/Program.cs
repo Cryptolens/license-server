@@ -109,7 +109,7 @@ namespace LicenseServer
                 }
                 else
                 {
-                    config = Helpers.ReadConfiguration(ConfigurationFromCryptolens);
+                    config = Helpers.ReadConfiguration(ConfigurationFromCryptolens, Constants.RSAPubKey);
                 }
 
                 if (config == null)
