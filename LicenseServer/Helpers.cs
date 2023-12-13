@@ -721,6 +721,7 @@ namespace LicenseServer
                 if(Path.IsPathRooted(pathToCacheFolder)) 
                 {
                     //path is absolute
+                    path = pathToCacheFolder;
                 }
                 else
                 {
