@@ -718,7 +718,15 @@ namespace LicenseServer
 
             if (!string.IsNullOrWhiteSpace(pathToCacheFolder))
             {
-                path = Path.Combine(pathToCacheFolder, "cache");
+                if(Path.IsPathRooted(pathToCacheFolder)) 
+                {
+                    //path is absolute
+                }
+                else
+                {
+                    //path is relative
+                    path = Path.Combine(pathToCacheFolder, "cache");
+                }
             }
             else
             {
